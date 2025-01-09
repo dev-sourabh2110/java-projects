@@ -74,6 +74,18 @@
 <!--            <artifactId>spring-core</artifactId>-->
 <!--            <version>6.2.1</version> &lt;!&ndash; Ensure compatibility with Spring 6.x &ndash;&gt;-->
 <!--        </dependency>-->
+
+        <!-- Spring Security for authentication and authorization -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- BCrypt Password Encoder (for password encryption) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
