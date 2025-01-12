@@ -33,14 +33,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/h2-console/**").permitAll()  // Allow access to H2 Console
-                                .requestMatchers("/api/auth/login", "/api/auth/forget-password", "/api/public/register").permitAll()  // Allow login, register, and forget-password without authentication
-                                .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")  // Only 'USER' and 'ADMIN' can access GET endpoints
-                                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")  // Only 'ADMIN' can POST to user endpoints
+                                authorizeRequests
+                                        .requestMatchers("/h2-console/**").permitAll()  // Allow access to H2 Console
+                                        .requestMatchers("/api/auth/login", "/api/auth/forget-password", "/api/public/register").permitAll()  // Allow login, register, and forget-password without authentication
+                                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyRole("USER", "ADMIN")  // Only 'USER' and 'ADMIN' can access GET endpoints
+                                        .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")  // Only 'ADMIN' can POST to user endpoints
 //                                .requestMatchers(HttpMethod.POST, "/api/test-drive/request/**").hasAnyRole("ADMIN", "USER")  // Only 'ADMIN' can POST to user endpoints
-                                .anyRequest().authenticated()  // Require authentication for other requests
-                )            .httpBasic(httpBasic -> {})  // Apply HTTP Basic Authentication using the new Customizer
+                                        .anyRequest().authenticated()  // Require authentication for other requests
+                ).httpBasic(httpBasic -> {
+                })  // Apply HTTP Basic Authentication using the new Customizer
 
 //                .formLogin(form ->
 //                        form

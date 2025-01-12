@@ -1,15 +1,13 @@
 package com.data.service;
 
+import com.data.entity.Appointment;
 import com.data.entity.TestDrive;
 import com.data.pojo.TestDriveRequest;
-import com.data.entity.UserEntity;
+import com.data.repository.AppointmentRepository;
 import com.data.repository.TestDriveRepository;
-import com.data.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import jakarta.transaction.Transactional;
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TestDriveService {
@@ -18,21 +16,11 @@ public class TestDriveService {
     private TestDriveRepository testDriveRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private AppointmentRepository appointmentRepository; // Inject AppointmentRepository
 
     @Transactional
-    public String saveTestDriveRequest(TestDriveRequest testDriveRequest, BindingResult result) {
-        if (result.hasErrors()) {
-            return "Invalid input data: " + result.getAllErrors();
-        }
-
-        // Validate if the user exists
-        Optional<UserEntity> user = userRepository.findByEmail(testDriveRequest.getEmail());
-        if (user.isEmpty()) {
-            return "User not found with the provided email";
-        }
-
-        // Create a TestDrive entity from the request data
+    public String saveTestDriveRequest(TestDriveRequest testDriveRequest) {
+        // Create a new TestDrive entity
         TestDrive testDrive = new TestDrive();
         testDrive.setName(testDriveRequest.getName());
         testDrive.setEmail(testDriveRequest.getEmail());
@@ -40,8 +28,19 @@ public class TestDriveService {
         testDrive.setAddress(testDriveRequest.getAddress());
         testDrive.setDrivingLicenseNumber(testDriveRequest.getDrivingLicenseNumber());
 
-        // Save the test drive request to the database
+        // Create a new Appointment entity
+        Appointment appointment = new Appointment();
+        appointment.setCarModel(testDriveRequest.getAppointmentRequest().getCarModel());
+        appointment.setAppointmentDate(testDriveRequest.getAppointmentRequest().getAppointmentDate());
+        appointment.setTestDrive(testDrive);
+
+        // Link Appointment with TestDrive
+        testDrive.getAppointments().add(appointment);
+
+        // Save TestDrive and Appointment
         testDriveRepository.save(testDrive);
-        return "Test drive request successfully saved";
+        appointmentRepository.save(appointment);
+
+        return "Test drive and appointment saved successfully!";
     }
 }

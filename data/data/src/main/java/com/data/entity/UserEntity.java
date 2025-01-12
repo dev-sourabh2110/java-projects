@@ -26,6 +26,11 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "role_name"))
     private Set<Role> roles = new HashSet<>();
 
+    public UserEntity(){}
+    public UserEntity(String email) {
+        this.email=email;
+    }
+
 
     // Getters and Setters
     public String getEmail() {

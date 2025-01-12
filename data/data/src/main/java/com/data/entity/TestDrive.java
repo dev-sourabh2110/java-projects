@@ -1,17 +1,16 @@
 package com.data.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "test_drive")
 public class TestDrive {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Auto-generate the ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -20,7 +19,20 @@ public class TestDrive {
     private String address;
     private String drivingLicenseNumber;
 
+    @OneToMany(mappedBy = "testDrive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Appointment> appointments = new HashSet<>();
+
     // Getters and Setters
+
+    public Set<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(Set<Appointment> appointments) {
+        this.appointments = appointments;
+    }
+
+    // Other Getters and Setters for other fields
 
     public Long getId() {
         return id;
