@@ -1,11 +1,12 @@
 package com.data.entity;
 
-import com.data.entity.UserEntity;
 import jakarta.persistence.*;
 
+import java.util.Date;
+
 @Entity
-@Table(name = "wishlist")
-public class WishlistEntity {
+@Table(name = "user_history")
+public class UserHistoryEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -17,6 +18,9 @@ public class WishlistEntity {
     @ManyToOne
     @JoinColumn(name = "car_id")
     private CarEntity car;
+
+    private String historyType; // Appointment or Purchase
+    private Date date;
 
     // Getters and Setters
 
@@ -44,4 +48,21 @@ public class WishlistEntity {
     public void setCar(CarEntity car) {
         this.car = car;
     }
+
+    public String getHistoryType() {
+        return historyType;
+    }
+
+    public void setHistoryType(String historyType) {
+        this.historyType = historyType;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
 }
+

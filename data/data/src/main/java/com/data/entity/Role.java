@@ -1,20 +1,26 @@
 package com.data.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "roles")
 public class Role {
 
     @Id
-    private String name;  // For example: 'ADMIN', 'USER'
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public Role() {}
+    @Column(unique = true, nullable = false)
+    private String name; // e.g., USER, VENDOR, ADMIN
 
-    public Role(String name) {
-        this.name = name;
+    // Getters and Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

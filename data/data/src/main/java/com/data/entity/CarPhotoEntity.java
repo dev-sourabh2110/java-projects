@@ -1,25 +1,23 @@
 package com.data.entity;
 
-import com.data.entity.UserEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "wishlist")
-public class WishlistEntity {
+@Table(name = "car_photos")
+public class CarPhotoEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_email")
-    private UserEntity user;
+    @Lob
+    @Column(nullable = false)
+    private byte[] photo; // BLOB to store photo data
 
     @ManyToOne
-    @JoinColumn(name = "car_id")
-    private CarEntity car;
+    @JoinColumn(name = "car_id", nullable = false)
+    private CarEntity car; // Association with CarEntity
 
     // Getters and Setters
-
 
     public Long getId() {
         return id;
@@ -29,12 +27,12 @@ public class WishlistEntity {
         this.id = id;
     }
 
-    public UserEntity getUser() {
-        return user;
+    public byte[] getPhoto() {
+        return photo;
     }
 
-    public void setUser(UserEntity user) {
-        this.user = user;
+    public void setPhoto(byte[] photo) {
+        this.photo = photo;
     }
 
     public CarEntity getCar() {
@@ -45,3 +43,4 @@ public class WishlistEntity {
         this.car = car;
     }
 }
+

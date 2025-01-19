@@ -20,13 +20,13 @@ public class AuthenticationController {
     private PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginRequest) {
-        boolean isAuthenticated = loginService.authenticateUser(loginRequest);
+    public ResponseEntity<String> login() {
+      //  boolean isAuthenticated = loginService.authenticateUser(loginRequest);
 
-        if (isAuthenticated) {
+      //  if (isAuthenticated) {
             return ResponseEntity.ok("Login successful");
-        }
-        return ResponseEntity.status(401).body("Invalid credentials");
+       // }
+       // return ResponseEntity.status(401).body("Invalid credentials");
     }
 
     @PostMapping("/forget-password")

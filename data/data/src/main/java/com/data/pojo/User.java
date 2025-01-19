@@ -33,6 +33,9 @@ public class User {
     @NotNull(message = "Confirm Password is required")
     private String confirmPassword;
 
+    @NotNull(message = "Address is required")
+    private String address;
+
     // Getters and Setters
     public String getFirstName() {
         return firstName;
@@ -88,5 +91,13 @@ public class User {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

@@ -22,6 +22,7 @@ public class UserProfileService {
         userEntity.setFirstName(updatedUser.getFirstName());
         userEntity.setLastName(updatedUser.getLastName());
         userEntity.setPhoneNumber(updatedUser.getPhoneNumber());
+        userEntity.setAddress(updatedUser.getAddress());
         userEntity.setDob(updatedUser.getDob());
 
         // Save updated profile

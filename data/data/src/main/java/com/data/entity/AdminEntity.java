@@ -1,23 +1,26 @@
 package com.data.entity;
 
-import com.data.entity.UserEntity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
-@Table(name = "wishlist")
-public class WishlistEntity {
+@Table(name = "admins")
+public class AdminEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_email")
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @ManyToOne
-    @JoinColumn(name = "car_id")
-    private CarEntity car;
+    private boolean active;
 
+    // Additional fields can be added
     // Getters and Setters
 
 
@@ -37,11 +40,11 @@ public class WishlistEntity {
         this.user = user;
     }
 
-    public CarEntity getCar() {
-        return car;
+    public boolean isActive() {
+        return active;
     }
 
-    public void setCar(CarEntity car) {
-        this.car = car;
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

@@ -15,7 +15,7 @@ public class MakeOfferController {
     @Autowired
     private MakeOfferService makeOfferService;
 
-    @Secured("USER")
+    @Secured({"USER","VENDOR"})
     @PostMapping("/request")
     public ResponseEntity<String> makeOffer(@Valid @RequestBody MakeOfferRequest makeOfferRequest) {
         // Save the offer and return a message
