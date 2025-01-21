@@ -9,11 +9,29 @@ import java.util.List;
 
 @Service
 public class CarFilterService {
-    @Autowired
-    private CarRepository carRepository;
 
-    public List<CarEntity> filterCars(String category, String brand, Double minPrice, Double maxPrice) {
-        return carRepository.findByCategoryAndBrandAndPriceBetween(category, brand, minPrice, maxPrice);
+    private final CarRepository carRepository;
+
+    public CarFilterService(CarRepository carRepository) {
+        this.carRepository = carRepository;
     }
+
+    public List<CarEntity> searchCars(String title, String model, String make) {
+        return carRepository.findByTitleContainingIgnoreCaseOrModelContainingIgnoreCaseOrMakeContainingIgnoreCase(
+                title, model, make);
+    }
+
+    public List<CarEntity> filterByCategoryAndPrice(String type, String make, Double minPrice, Double maxPrice) {
+        return carRepository.findByTypeAndMakeAndRegularPriceBetween(type, make, minPrice, maxPrice);
+    }
+
+//    public Double calculateRevenue() {
+//        return carRepository.sumCarRevenue();
+//    }
+
+//    public List<CarEntity> getPendingApprovalCars() {
+//        return carRepository.findByIsApproved(false);
+//    }
 }
+
 

@@ -10,8 +10,8 @@ public class CarPhotoEntity {
     private Long id;
 
     @Lob
-    @Column(nullable = false)
-    private byte[] photo; // BLOB to store photo data
+    @Column(nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] photo; // Store large images as LONGBLOB
 
     @ManyToOne
     @JoinColumn(name = "car_id", nullable = false)

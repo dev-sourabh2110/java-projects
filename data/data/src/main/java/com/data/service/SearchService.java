@@ -13,7 +13,7 @@ public class SearchService {
     private CarRepository carRepository;
 
     public List<CarEntity> searchCars(String query) {
-        return carRepository.findByNameContainingIgnoreCaseOrModelContainingIgnoreCaseOrBrandContainingIgnoreCase(
+        return carRepository.findByTitleContainingIgnoreCaseOrModelContainingIgnoreCaseOrMakeContainingIgnoreCase(
                 query, query, query);
     }
 }

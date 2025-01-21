@@ -1,8 +1,7 @@
 package com.data.service;
 
-import com.data.entity.CarEntity;
-import com.data.entity.CarPhotoEntity;
-import com.data.entity.VendorEntity;
+import com.data.entity.*;
+import com.data.pojo.response.CarDTO;
 import com.data.repository.CarPhotoRepository;
 import com.data.repository.CarRepository;
 import org.springframework.stereotype.Service;
@@ -13,11 +12,57 @@ import java.util.List;
 public class CarService {
 
     private final CarRepository carRepository;
-    private final CarPhotoRepository carPhotoRepository;
 
-    public CarService(CarRepository carRepository, CarPhotoRepository carPhotoRepository) {
+    public CarService(CarRepository carRepository) {
         this.carRepository = carRepository;
-        this.carPhotoRepository = carPhotoRepository;
+    }
+
+    public CarEntity saveBasicCarDetails(CarEntity car) {
+        return carRepository.save(car);
+    }
+
+    public CarSpecificationsEntity saveCarSpecifications(Long carId, CarSpecificationsEntity specifications) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        specifications.setCar(car);
+        car.setSpecifications(specifications);
+        carRepository.save(car);
+        return specifications;
+    }
+
+    public CarFeaturesEntity saveCarFeatures(Long carId, CarFeaturesEntity features) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        features.setCar(car);
+        car.setFeatures(features);
+        carRepository.save(car);
+        return features;
+    }
+
+    public CarMediaEntity saveCarMedia(Long carId, CarMediaEntity media) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        media.setCar(car);
+        car.setMedia(media);
+        carRepository.save(car);
+        return media;
+    }
+
+    public CarAddressEntity saveCarAddress(Long carId, CarAddressEntity address) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+        address.setCar(car);
+        car.setAddress(address);
+        carRepository.save(car);
+        return address;
+    }
+
+    public List<CarEntity> getCarsByVendor(Long vendorId) {
+        return carRepository.findByVendorId(vendorId);
+    }
+
+    public List<CarEntity> getSimilarProducts(String category, String brand) {
+        return carRepository.findByTypeAndModel(category, brand);
     }
 
     public CarEntity getCarDetails(Long carId) {
@@ -25,50 +70,9 @@ public class CarService {
                 .orElseThrow(() -> new IllegalArgumentException("Car not found"));
     }
 
-    public List<CarEntity> getSimilarProducts(String category, String brand) {
-        return carRepository.findByCategoryAndBrand(category, brand);
-    }
-
-    public CarEntity addCar(CarEntity car, List<byte[]> photos, VendorEntity vendor) {
-        if (vendor == null) {
-            throw new IllegalArgumentException("Vendor cannot be null");
-        }
-        car.setVendor(vendor);
-        car.setApproved(false); // Requires admin approval
-        car.setSold(false);
-
-        CarEntity savedCar = carRepository.save(car);
-
-        if (photos != null && !photos.isEmpty()) {
-            for (byte[] photo : photos) {
-                CarPhotoEntity carPhoto = new CarPhotoEntity();
-                carPhoto.setCar(savedCar);
-                carPhoto.setPhoto(photo);
-                carPhotoRepository.save(carPhoto);
-            }
-        }
-
-        return savedCar;
-    }
-
-    public List<CarEntity> getCarsByVendor(Long vendorId) {
-        return carRepository.findByVendorId(vendorId);
-    }
-
-    public void updateCarPhotos(Long carId, List<byte[]> photos) {
-        CarEntity car = carRepository.findById(carId)
-                .orElseThrow(() -> new RuntimeException("Car not found"));
-
-        // Remove existing photos
-        carPhotoRepository.deleteAll(car.getPhotos());
-
-        // Add new photos
-        for (byte[] photo : photos) {
-            CarPhotoEntity carPhoto = new CarPhotoEntity();
-            carPhoto.setCar(car);
-            carPhoto.setPhoto(photo);
-            carPhotoRepository.save(carPhoto);
-        }
+    public List<CarDTO> getAllCarsBasicDetails() {
+        return carRepository.findAllBasicDetails();
     }
 }
+
 

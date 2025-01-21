@@ -13,7 +13,7 @@ public class HomeService {
     private CarRepository carRepository;
 
     public List<CarEntity> getTrendingCars() {
-        return carRepository.findTop5ByOrderByPriceDesc(); // Example: Trending cars are the most expensive
+        return carRepository.findTop5ByOrderByIdDesc(); // Example: Trending cars are the most expensive
     }
 
     public List<CarEntity> getRecentlyAddedCars() {

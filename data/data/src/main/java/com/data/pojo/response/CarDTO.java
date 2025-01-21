@@ -1,22 +1,12 @@
-package com.data.entity;
+package com.data.pojo.response;
 
-import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
-@Entity
-@Table(name = "cars")
-public class CarEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CarDTO {
     private Long id;
-
     private String title;
     private String make;
     private String model;
     private String type;
     private String year;
-    @Column(name = "car_condition")
     private String condition;
     private String stockNumber;
     private String vinNumber;
@@ -24,21 +14,20 @@ public class CarEntity {
     private Double salePrice;
     private Double requestPrice;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
-    private CarSpecificationsEntity specifications;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
-    private CarFeaturesEntity features;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
-    private CarMediaEntity media;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
-    private CarAddressEntity address;
-
-    @ManyToOne
-    @JoinColumn(name = "vendor_id", nullable = false)
-    private VendorEntity vendor;
+    public CarDTO(Long id, String title, String make, String model, String type, String year, String condition, String stockNumber, String vinNumber, Double regularPrice, Double salePrice, Double requestPrice) {
+        this.id = id;
+        this.title = title;
+        this.make = make;
+        this.model = model;
+        this.type = type;
+        this.year = year;
+        this.condition = condition;
+        this.stockNumber = stockNumber;
+        this.vinNumber = vinNumber;
+        this.regularPrice = regularPrice;
+        this.salePrice = salePrice;
+        this.requestPrice = requestPrice;
+    }
 
     // Getters and Setters
 
@@ -137,44 +126,5 @@ public class CarEntity {
     public void setRequestPrice(Double requestPrice) {
         this.requestPrice = requestPrice;
     }
-
-    public CarSpecificationsEntity getSpecifications() {
-        return specifications;
-    }
-
-    public void setSpecifications(CarSpecificationsEntity specifications) {
-        this.specifications = specifications;
-    }
-
-    public CarFeaturesEntity getFeatures() {
-        return features;
-    }
-
-    public void setFeatures(CarFeaturesEntity features) {
-        this.features = features;
-    }
-
-    public CarMediaEntity getMedia() {
-        return media;
-    }
-
-    public void setMedia(CarMediaEntity media) {
-        this.media = media;
-    }
-
-    public CarAddressEntity getAddress() {
-        return address;
-    }
-
-    public void setAddress(CarAddressEntity address) {
-        this.address = address;
-    }
-
-    public VendorEntity getVendor() {
-        return vendor;
-    }
-
-    public void setVendor(VendorEntity vendor) {
-        this.vendor = vendor;
-    }
 }
+

@@ -23,7 +23,7 @@ public class AdminApprovalService {
     public String approveCar(Long carId) {
         var car = carRepository.findById(carId)
                 .orElseThrow(() -> new IllegalArgumentException("Car not found"));
-        car.setApproved(true);
+      //  car.setApproved(true);
         carRepository.save(car);
         return "Car approved successfully.";
     }

@@ -66,7 +66,7 @@ public class AdminService {
         metrics.put("totalCustomers", userRepository.count());
         metrics.put("totalVendors", vendorRepository.count());
         metrics.put("totalCarsListed", carRepository.count());
-        metrics.put("totalRevenue", carRepository.sumCarRevenue());
+//        metrics.put("totalRevenue", carRepository.sumCarRevenue());
         return metrics;
     }
 

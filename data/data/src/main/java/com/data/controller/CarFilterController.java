@@ -23,7 +23,7 @@ public class CarFilterController {
             @RequestParam String brand,
             @RequestParam Double minPrice,
             @RequestParam Double maxPrice) {
-        return ResponseEntity.ok(carFilterService.filterCars(category, brand, minPrice, maxPrice));
+        return ResponseEntity.ok(carFilterService.filterByCategoryAndPrice(category, brand, minPrice, maxPrice));
     }
 }
 
