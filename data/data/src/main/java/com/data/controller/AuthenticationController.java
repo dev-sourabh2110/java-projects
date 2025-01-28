@@ -4,10 +4,14 @@ import com.data.pojo.ForgetPasswordRequest;
 import com.data.pojo.LoginRequest;
 import com.data.service.LoginService;
 import com.data.service.PasswordResetService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HttpServletBean;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,7 +24,8 @@ public class AuthenticationController {
     private PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login() {
+    public ResponseEntity<String> login(HttpServletRequest request) {
+        request.getHeader("User-Type");
       //  boolean isAuthenticated = loginService.authenticateUser(loginRequest);
 
       //  if (isAuthenticated) {

@@ -2,20 +2,25 @@ package com.data.controller;
 
 import com.data.entity.*;
 import com.data.pojo.response.CarDTO;
+import com.data.pojo.response.CarSearchDTO;
 import com.data.repository.*;
 import com.data.service.CarService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/vendors/cars")
+@RequestMapping("/api/cars")
 public class CarController {
 
     private final CarService carService;
@@ -67,10 +72,24 @@ CarMediaRepository carMediaRepository,
     @PostMapping("/{carId}/add-media")
     public ResponseEntity<String> addCarMedia(
             @PathVariable Long carId,
-            @ModelAttribute CarMediaEntity media) {
-        carService.saveCarMedia(carId, media);
-        return ResponseEntity.ok("Car media saved.");
+            @RequestParam(required = false) MultipartFile photo1,
+            @RequestParam(required = false) MultipartFile photo2,
+            @RequestParam(required = false) MultipartFile photo3,
+            @RequestParam(required = false) MultipartFile photo4,
+            @RequestParam(required = false) MultipartFile photo5,
+            @RequestParam(required = false) String videoUrl,
+            @RequestParam(required = false) MultipartFile vinReport) {
+
+        carService.saveCarMedia(carId, photo1,
+                photo2,
+                photo3,
+                photo4,
+                photo5,videoUrl,vinReport);
+
+            return ResponseEntity.ok("Car media saved successfully.");
+
     }
+
 
     @PostMapping("/{carId}/add-address")
     public ResponseEntity<String> addCarAddress(
@@ -124,6 +143,36 @@ CarMediaRepository carMediaRepository,
         return carAddressRepository.findByCarId(carId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<CarSearchDTO>> searchCars(@RequestParam String keyword) {
+        List<CarSearchDTO> searchResults = carService.searchCars(keyword);
+        return ResponseEntity.ok(searchResults);
+    }
+
+    @GetMapping("/media/{carId}/photo{photoIndex}")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable Long carId, @PathVariable int photoIndex) {
+        Optional<CarMediaEntity> media = carMediaRepository.findByCarId(carId);
+        byte[] photo = null;
+
+        if (media.isPresent()) {
+            switch (photoIndex) {
+                case 1: photo = media.get().getPhoto1(); break;
+                case 2: photo = media.get().getPhoto2(); break;
+                case 3: photo = media.get().getPhoto3(); break;
+                case 4: photo = media.get().getPhoto4(); break;
+                case 5: photo = media.get().getPhoto5(); break;
+            }
+        }
+
+        if (photo != null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(photo);
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
 }

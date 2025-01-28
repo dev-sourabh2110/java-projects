@@ -1,5 +1,6 @@
 package com.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,6 +12,7 @@ public class CarMediaEntity {
 
     @OneToOne
     @JoinColumn(name = "car_id", nullable = false)
+    @JsonBackReference // Prevent infinite recursion
     private CarEntity car;
 
     @Lob

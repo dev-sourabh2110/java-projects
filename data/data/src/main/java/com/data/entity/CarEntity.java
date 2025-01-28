@@ -1,5 +1,6 @@
 package com.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -25,15 +26,19 @@ public class CarEntity {
     private Double requestPrice;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
+    @JsonManagedReference // Prevent infinite recursion
     private CarSpecificationsEntity specifications;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
+    @JsonManagedReference // Prevent infinite recursion
     private CarFeaturesEntity features;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
+    @JsonManagedReference // Prevent infinite recursion
     private CarMediaEntity media;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car")
+    @JsonManagedReference // Prevent infinite recursion
     private CarAddressEntity address;
 
     @ManyToOne

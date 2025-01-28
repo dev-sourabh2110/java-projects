@@ -4,12 +4,20 @@ import com.data.entity.CarEntity;
 import com.data.pojo.response.CarDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
 public interface CarRepository extends JpaRepository<CarEntity, Long> {
+
+    @Query("SELECT c FROM CarEntity c " +
+            "WHERE LOWER(c.model) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(c.make) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<CarEntity> searchByKeyword(@Param("keyword") String keyword);
+
 
     @Query("SELECT new com.data.pojo.response.CarDTO(c.id, c.title, c.make, c.model, c.type, c.year, c.condition, c.stockNumber, c.vinNumber, c.regularPrice, c.salePrice, c.requestPrice) FROM CarEntity c")
     List<CarDTO> findAllBasicDetails();
