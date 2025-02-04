@@ -1,13 +1,13 @@
 package com.data.service;
 
 import com.data.entity.*;
+import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
+import com.data.pojo.response.CarMediaDTO;
 import com.data.pojo.response.CarSearchDTO;
 import com.data.repository.CarMediaRepository;
-import com.data.repository.CarPhotoRepository;
 import com.data.repository.CarRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CarService {
@@ -86,11 +87,11 @@ public class CarService {
             }
             carMedia.setVideoUrl(videoUrl);
 
-          return   carMediaRepository.save(carMedia);
-        //return media;
+            return carMediaRepository.save(carMedia);
+            //return media;
         } catch (IOException e) {
-            return  null;
-           // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save media files.");
+            return null;
+            // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save media files.");
         }
     }
 
@@ -150,6 +151,79 @@ public class CarService {
         }
 
         return searchResults;
+    }
+
+    private List<CarBasicDTO> getCarBasicDTOList(List<CarEntity> cars) {
+        return cars.stream().map(car -> {
+            // Map basic fields
+            CarBasicDTO dto = new CarBasicDTO();
+            dto.setId(car.getId());
+            dto.setTitle(car.getTitle());
+            dto.setMake(car.getMake());
+            dto.setModel(car.getModel());
+            dto.setType(car.getType());
+            dto.setYear(car.getYear());
+            dto.setCondition(car.getCondition());
+            dto.setStockNumber(car.getStockNumber());
+            dto.setVinNumber(car.getVinNumber());
+            dto.setRegularPrice(car.getRegularPrice());
+            dto.setSalePrice(car.getSalePrice());
+            dto.setRequestPrice(car.getRequestPrice());
+            dto.setDescription(car.getDescription());
+            dto.setPriceLabel(car.isPriceLabel());
+            dto.setCreateTime(car.getCreateTime());
+            dto.setUpdateTime(car.getUpdateTime());
+
+            // Map media from CarMediaEntity if present
+            CarMediaDTO mediaDTO = null;
+            CarMediaEntity media = car.getMedia();
+            if (media != null) {
+                mediaDTO = new CarMediaDTO();
+                // We return URL endpoints for photos rather than raw data.
+                // Adjust these endpoints if needed.
+                mediaDTO.setPhoto1(media.getPhoto1() != null ? "/api/cars/media/" + car.getId() + "/photo1" : null);
+                mediaDTO.setPhoto2(media.getPhoto2() != null ? "/api/cars/media/" + car.getId() + "/photo2" : null);
+                mediaDTO.setPhoto3(media.getPhoto3() != null ? "/api/cars/media/" + car.getId() + "/photo3" : null);
+                mediaDTO.setPhoto4(media.getPhoto4() != null ? "/api/cars/media/" + car.getId() + "/photo4" : null);
+                mediaDTO.setPhoto5(media.getPhoto5() != null ? "/api/cars/media/" + car.getId() + "/photo5" : null);
+                mediaDTO.setVideoUrl(media.getVideoUrl());
+                mediaDTO.setVinReport(media.getVinReport() != null ? "/api/cars/media/" + car.getId() + "/vinReport" : null);
+            }
+            dto.setMedia(mediaDTO);
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+    // 1. Get cars by type (limited to 6) ordered by createTime descending
+// Get 6 cars by type and return basic details with media
+    public List<CarBasicDTO> getCarsByTypeBasic(String type) {
+        List<CarEntity> cars = carRepository.findTop6ByTypeOrderByCreateTimeDesc(type);
+        return getCarBasicDTOList(cars);
+    }
+
+    // 2. Get trending cars based on wishlist counts (limited to 6)
+    public List<CarBasicDTO> getTrendingCars() {
+        List<CarEntity> trendingCars = carRepository.findTrendingCars(PageRequest.of(0, 6));
+        return getCarBasicDTOList(trendingCars);
+    }
+
+    // 3. Get cars by brand (make) (limited to 6) ordered by createTime descending
+    public List<CarBasicDTO> getCarsByMake(String make) {
+        List<CarEntity> top6ByMakeOrderByCreateTimeDesc = carRepository.findTop6ByMakeOrderByCreateTimeDesc(make);
+        return getCarBasicDTOList(top6ByMakeOrderByCreateTimeDesc);
+    }
+
+    // 4. Get recently added cars (limited to 6) ordered by createTime descending
+    public List<CarBasicDTO> getRecentlyAddedCars() {
+        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findTop6ByOrderByCreateTimeDesc();
+        return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
+    }
+
+    // 5. Get all cars (limited to 6) – for a general “all cars” category
+    public List<CarBasicDTO> getAllCarsLimited() {
+        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findTop6ByOrderByCreateTimeDesc();
+        return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
     }
 }
 

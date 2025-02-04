@@ -1,70 +1,73 @@
-package com.data.entity;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
+package com.data.pojo.response;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-@Entity
-@Table(name = "cars")
-public class CarEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
+public class CarBasicDTO {
+    private Long id;
     private String title;
     private String make;
     private String model;
     private String type;
     private String year;
-    // Use a custom column name for "condition" as it is a reserved keyword
-    @Column(name = "car_condition")
     private String condition;
     private String stockNumber;
     private String vinNumber;
     private Double regularPrice;
     private Double salePrice;
     private Double requestPrice;
-    @Column(columnDefinition = "TEXT")
     private String description;
-    // Assuming priceLabel is used as a flag; if you prefer a different type, adjust accordingly
     private boolean priceLabel;
-
-    // Timestamp fields for tracking creation and update times
-    @Column(name = "create_time", nullable = false, updatable = false)
     private Timestamp createTime;
-    @Column(name = "update_time", nullable = false)
     private Timestamp updateTime;
+    private CarMediaDTO media;
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
-    @JsonManagedReference // Prevent infinite recursion
-    private CarSpecificationsEntity specifications;
+    public CarBasicDTO() {
+    }
 
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
-    @JsonManagedReference // Prevent infinite recursion
-    private CarFeaturesEntity features;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
-    @JsonManagedReference // Prevent infinite recursion
-    private CarMediaEntity media;
-
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
-    @JsonManagedReference // Prevent infinite recursion
-    private CarAddressEntity address;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vendor_id", nullable = false)
-    private VendorEntity vendor;
+    public CarBasicDTO(Long id, String title, String make, String model, String type, String year,
+                       String condition, String stockNumber, String vinNumber, Double regularPrice,
+                       Double salePrice, Double requestPrice, String description, boolean priceLabel,
+                       Timestamp createTime, Timestamp updateTime, CarMediaDTO media) {
+        this.id = id;
+        this.title = title;
+        this.make = make;
+        this.model = model;
+        this.type = type;
+        this.year = year;
+        this.condition = condition;
+        this.stockNumber = stockNumber;
+        this.vinNumber = vinNumber;
+        this.regularPrice = regularPrice;
+        this.salePrice = salePrice;
+        this.requestPrice = requestPrice;
+        this.description = description;
+        this.priceLabel = priceLabel;
+        this.createTime = createTime;
+        this.updateTime = updateTime;
+        this.media = media;
+    }
 
     // Getters and Setters
 
+    // ... (omitted for brevity)
+    
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    // (include getters and setters for all fields)
+    
+    public CarMediaDTO getMedia() {
+        return media;
+    }
+
+    public void setMedia(CarMediaDTO media) {
+        this.media = media;
     }
 
     public String getTitle() {
@@ -155,46 +158,6 @@ public class CarEntity {
         this.requestPrice = requestPrice;
     }
 
-    public CarSpecificationsEntity getSpecifications() {
-        return specifications;
-    }
-
-    public void setSpecifications(CarSpecificationsEntity specifications) {
-        this.specifications = specifications;
-    }
-
-    public CarFeaturesEntity getFeatures() {
-        return features;
-    }
-
-    public void setFeatures(CarFeaturesEntity features) {
-        this.features = features;
-    }
-
-    public CarMediaEntity getMedia() {
-        return media;
-    }
-
-    public void setMedia(CarMediaEntity media) {
-        this.media = media;
-    }
-
-    public CarAddressEntity getAddress() {
-        return address;
-    }
-
-    public void setAddress(CarAddressEntity address) {
-        this.address = address;
-    }
-
-    public VendorEntity getVendor() {
-        return vendor;
-    }
-
-    public void setVendor(VendorEntity vendor) {
-        this.vendor = vendor;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -225,18 +188,5 @@ public class CarEntity {
 
     public void setUpdateTime(Timestamp updateTime) {
         this.updateTime = updateTime;
-    }
-
-    // Auto-update timestamps
-    @PrePersist
-    protected void onCreate() {
-        Timestamp now = new Timestamp(System.currentTimeMillis());
-        this.createTime = now;
-        this.updateTime = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updateTime = new Timestamp(System.currentTimeMillis());
     }
 }

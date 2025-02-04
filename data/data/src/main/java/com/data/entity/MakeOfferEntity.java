@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Positive;
 
+import java.sql.Timestamp;
+
 @Entity
 @Table(name = "make_offer")
 public class MakeOfferEntity {
@@ -34,6 +36,9 @@ public class MakeOfferEntity {
 
     @Positive(message = "Final Offered Price must be a positive number")
     private Double finalOfferedPrice;
+
+    private Timestamp createTime;
+    private Timestamp updateTime;
 
     // Getters and Setters
     public Long getId() {
@@ -98,5 +103,21 @@ public class MakeOfferEntity {
 
     public void setFinalOfferedPrice(Double finalOfferedPrice) {
         this.finalOfferedPrice = finalOfferedPrice;
+    }
+
+    public Timestamp getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
+
+    public Timestamp getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Timestamp updateTime) {
+        this.updateTime = updateTime;
     }
 }

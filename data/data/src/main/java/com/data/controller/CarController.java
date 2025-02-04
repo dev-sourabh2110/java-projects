@@ -1,6 +1,7 @@
 package com.data.controller;
 
 import com.data.entity.*;
+import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
 import com.data.pojo.response.CarSearchDTO;
 import com.data.repository.*;
@@ -173,6 +174,42 @@ CarMediaRepository carMediaRepository,
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    // 1. By-type column – fetch 6 cars by type (e.g., "SUV", "Compact")
+    // GET endpoint for "by-type" home page (6 records, basic details + media)
+    @GetMapping("/by-type")
+    public ResponseEntity<List<CarBasicDTO>> getCarsByType(@RequestParam String type) {
+        List<CarBasicDTO> cars = carService.getCarsByTypeBasic(type);
+        return ResponseEntity.ok(cars);
+    }
+
+    // 2. Trending – fetch 6 trending cars (based on wishlist count)
+    @GetMapping("/trending")
+    public ResponseEntity<List<CarBasicDTO>> getTrendingCars() {
+        List<CarBasicDTO> cars = carService.getTrendingCars();
+        return ResponseEntity.ok(cars);
+    }
+
+    // 3. By-brands (make) – fetch 6 cars by brand
+    @GetMapping("/                                 ")
+    public ResponseEntity<List<CarBasicDTO>> getCarsByMake(@RequestParam String make) {
+        List<CarBasicDTO> cars = carService.getCarsByMake(make);
+        return ResponseEntity.ok(cars);
+    }
+
+    // 4. Recently – fetch 6 most recently added cars (using createTime)
+    @GetMapping("/recently")
+    public ResponseEntity<List<CarBasicDTO>> getRecentlyAddedCars() {
+        List<CarBasicDTO> cars = carService.getRecentlyAddedCars();
+        return ResponseEntity.ok(cars);
+    }
+
+    // 5. All Cars – fetch 6 cars for the "all cars" category
+    @GetMapping("/all")
+    public ResponseEntity<List<CarBasicDTO>> getAllCarsLimited() {
+        List<CarBasicDTO> cars = carService.getAllCarsLimited();
+        return ResponseEntity.ok(cars);
     }
 
 }

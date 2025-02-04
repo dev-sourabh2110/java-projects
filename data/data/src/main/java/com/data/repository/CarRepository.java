@@ -2,6 +2,7 @@ package com.data.repository;
 
 import com.data.entity.CarEntity;
 import com.data.pojo.response.CarDTO;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -90,4 +91,21 @@ public interface CarRepository extends JpaRepository<CarEntity, Long> {
      * Fetch cars based on availability (not sold).
      */
 //    List<CarEntity> findByIsSold(boolean isSold);
+
+    // Fetch top 6 cars by type ordered by createTime descending
+    List<CarEntity> findTop6ByTypeOrderByCreateTimeDesc(String type);
+
+    // Fetch top 6 cars by make (brand) ordered by createTime descending
+    List<CarEntity> findTop6ByMakeOrderByCreateTimeDesc(String make);
+
+    // Fetch top 6 recently added cars ordered by createTime descending
+    List<CarEntity> findTop6ByOrderByCreateTimeDesc();
+
+    // Fetch top 6 trending cars based on wishlist count (assuming WishlistEntity exists)
+    @Query("SELECT c FROM CarEntity c LEFT JOIN WishlistEntity w ON c.id = w.car.id " +
+            "GROUP BY c.id ORDER BY COUNT(w.id) DESC")
+    List<CarEntity> findTrendingCars(Pageable pageable);
+
+    // Fetch top 6 cars regardless (allcars)
+   // List<CarEntity> findTop6ByOrderByCreateTimeDesc();
 }

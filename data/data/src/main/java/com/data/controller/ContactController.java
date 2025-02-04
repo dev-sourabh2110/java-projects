@@ -12,9 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/contact")
 public class ContactController {
-    @Autowired
-    private ContactService contactService;
 
+    private final ContactService contactService;
+
+    public ContactController(ContactService contactService) {
+        this.contactService = contactService;
+    }
     @PostMapping
     public ResponseEntity<String> submitContact(@RequestBody ContactEntity contact) {
         String message = contactService.saveContact(contact);

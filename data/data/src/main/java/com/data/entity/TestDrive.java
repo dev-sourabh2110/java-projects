@@ -1,6 +1,8 @@
 package com.data.entity;
 
 import jakarta.persistence.*;
+
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +20,8 @@ public class TestDrive {
     private String phoneNumber;
     private String address;
     private String drivingLicenseNumber;
+    private Timestamp createTime;
+    private Timestamp updateTime;
 
     @OneToMany(mappedBy = "testDrive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Appointment> appointments = new HashSet<>();
@@ -80,5 +84,21 @@ public class TestDrive {
 
     public void setDrivingLicenseNumber(String drivingLicenseNumber) {
         this.drivingLicenseNumber = drivingLicenseNumber;
+    }
+
+    public Timestamp getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
+
+    public Timestamp getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Timestamp updateTime) {
+        this.updateTime = updateTime;
     }
 }

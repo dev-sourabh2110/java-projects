@@ -7,11 +7,15 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ContactService {
-    @Autowired
-    private ContactRepository contactRepository;
+
+    private final ContactRepository contactRepository;
+
+    public ContactService(ContactRepository contactRepository) {
+        this.contactRepository = contactRepository;
+    }
 
     public String saveContact(ContactEntity contact) {
         contactRepository.save(contact);
-        return "Your message has been sent to the admin.";
+        return "Contact form submitted successfully.";
     }
 }

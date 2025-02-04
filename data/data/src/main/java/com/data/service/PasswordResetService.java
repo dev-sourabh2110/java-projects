@@ -14,15 +14,13 @@ public class PasswordResetService {
     @Autowired
     private UserRepository userRepository;
 
-    public boolean resetPassword(ForgetPasswordRequest forgetPasswordRequest) {
+    public String getUserPassword(ForgetPasswordRequest forgetPasswordRequest) {
         String emailOrPhone = forgetPasswordRequest.getEmailOrPhone();
-        Optional<UserEntity> user = userRepository.findByEmailOrPhoneNumber(emailOrPhone, emailOrPhone);
+        UserEntity user = userRepository.findByEmailOrPhoneNumber(emailOrPhone, emailOrPhone).orElse(null);;
 
-        if (user.isPresent()) {
-            // Here we could send a reset token or email with password reset instructions
-            // For simplicity, let's just return true (in a real app, generate and send a token/email)
-            return true;
+        if (user != null) {
+            return user.getPassword();
         }
-        return false;
+        return null;
     }
 }

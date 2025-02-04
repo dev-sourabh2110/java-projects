@@ -36,12 +36,11 @@ public class AuthenticationController {
 
     @PostMapping("/forget-password")
     public ResponseEntity<String> forgetPassword(@RequestBody @Valid ForgetPasswordRequest forgetPasswordRequest) {
-        boolean isReset = passwordResetService.resetPassword(forgetPasswordRequest);
-
-        if (isReset) {
-            return ResponseEntity.ok("Password reset link sent successfully");
+        String password = passwordResetService.getUserPassword(forgetPasswordRequest);
+        if (password != null) {
+            return ResponseEntity.ok("Your password is: " + password);
         }
-        return ResponseEntity.status(404).body("User not found");
+        return ResponseEntity.status(404).body("User not found.");
     }
 }
 
