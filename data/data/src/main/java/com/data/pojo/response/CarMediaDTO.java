@@ -9,10 +9,10 @@ public class CarMediaDTO {
     private String videoUrl;
     private String vinReport;
 
-    public CarMediaDTO() {
-    }
+    public CarMediaDTO() {}
 
-    public CarMediaDTO(String photo1, String photo2, String photo3, String photo4, String photo5, String videoUrl, String vinReport) {
+    public CarMediaDTO(String photo1, String photo2, String photo3, String photo4,
+                       String photo5, String videoUrl, String vinReport) {
         this.photo1 = photo1;
         this.photo2 = photo2;
         this.photo3 = photo3;
@@ -22,7 +22,7 @@ public class CarMediaDTO {
         this.vinReport = vinReport;
     }
 
-    // Getters and Setters
+    // Getters and setters (omitted for brevity)
 
     public String getPhoto1() {
         return photo1;

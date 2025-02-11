@@ -178,37 +178,60 @@ CarMediaRepository carMediaRepository,
 
     // 1. By-type column – fetch 6 cars by type (e.g., "SUV", "Compact")
     // GET endpoint for "by-type" home page (6 records, basic details + media)
-    @GetMapping("/by-type")
-    public ResponseEntity<List<CarBasicDTO>> getCarsByType(@RequestParam String type) {
-        List<CarBasicDTO> cars = carService.getCarsByTypeBasic(type);
-        return ResponseEntity.ok(cars);
-    }
+//    @GetMapping("/by-type")
+//    public ResponseEntity<List<CarBasicDTO>> getCarsByType(@RequestParam String type) {
+//        List<CarBasicDTO> cars = carService.getCarsByTypeBasic(type);
+//        return ResponseEntity.ok(cars);
+//    }
 
     // 2. Trending – fetch 6 trending cars (based on wishlist count)
     @GetMapping("/trending")
-    public ResponseEntity<List<CarBasicDTO>> getTrendingCars() {
-        List<CarBasicDTO> cars = carService.getTrendingCars();
+    public ResponseEntity<List<CarBasicDTO>> getTrendingCars(@RequestParam int page,
+                                                             @RequestParam int size) {
+        List<CarBasicDTO> cars = carService.getTrendingCars(page, size);
         return ResponseEntity.ok(cars);
     }
 
-    // 3. By-brands (make) – fetch 6 cars by brand
-    @GetMapping("/                                 ")
-    public ResponseEntity<List<CarBasicDTO>> getCarsByMake(@RequestParam String make) {
-        List<CarBasicDTO> cars = carService.getCarsByMake(make);
-        return ResponseEntity.ok(cars);
-    }
+//    // 3. By-brands (make) – fetch 6 cars by brand
+//    @GetMapping("/by-make")
+//    public ResponseEntity<List<CarBasicDTO>> getCarsByMake(@RequestParam String make) {
+//        List<CarBasicDTO> cars = carService.getCarsByMake(make);
+//        return ResponseEntity.ok(cars);
+//    }
 
     // 4. Recently – fetch 6 most recently added cars (using createTime)
     @GetMapping("/recently")
-    public ResponseEntity<List<CarBasicDTO>> getRecentlyAddedCars() {
-        List<CarBasicDTO> cars = carService.getRecentlyAddedCars();
+    public ResponseEntity<List<CarBasicDTO>> getRecentlyAddedCars(@RequestParam int page,
+                                                                  @RequestParam int size) {
+        List<CarBasicDTO> cars = carService.getRecentlyAddedCars(page, size);
         return ResponseEntity.ok(cars);
     }
 
     // 5. All Cars – fetch 6 cars for the "all cars" category
     @GetMapping("/all")
-    public ResponseEntity<List<CarBasicDTO>> getAllCarsLimited() {
-        List<CarBasicDTO> cars = carService.getAllCarsLimited();
+    public ResponseEntity<List<CarBasicDTO>> getAllCarsLimited(@RequestParam int page,
+                                                               @RequestParam int size) {
+        List<CarBasicDTO> cars = carService.getAllCarsLimited(page, size);
+        return ResponseEntity.ok(cars);
+    }
+//
+//    // Endpoint for "by-type" with pagination
+//    @GetMapping("/type")
+//    public ResponseEntity<List<CarBasicDTO>> getCarsByType(
+//            @RequestParam String type,
+//            @RequestParam int page,
+//            @RequestParam int size) {
+//        List<CarBasicDTO> cars = carService.getCarsByType(type, page, size);
+//        return ResponseEntity.ok(cars);
+//    }
+
+    @GetMapping("/searchCars")
+    public ResponseEntity<List<CarBasicDTO>> searchCars(
+            @RequestParam String filterField,
+            @RequestParam String filterValue,
+            @RequestParam int page,
+            @RequestParam int size) {
+        List<CarBasicDTO> cars = carService.searchCars(filterField, filterValue, page, size);
         return ResponseEntity.ok(cars);
     }
 

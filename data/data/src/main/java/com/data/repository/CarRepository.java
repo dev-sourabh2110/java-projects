@@ -1,9 +1,11 @@
 package com.data.repository;
 
 import com.data.entity.CarEntity;
+import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CarRepository extends JpaRepository<CarEntity, Long> {
+public interface CarRepository extends JpaRepository<CarEntity, Long>, JpaSpecificationExecutor<CarEntity> {
 
     @Query("SELECT c FROM CarEntity c " +
             "WHERE LOWER(c.model) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
@@ -99,7 +101,7 @@ public interface CarRepository extends JpaRepository<CarEntity, Long> {
     List<CarEntity> findTop6ByMakeOrderByCreateTimeDesc(String make);
 
     // Fetch top 6 recently added cars ordered by createTime descending
-    List<CarEntity> findTop6ByOrderByCreateTimeDesc();
+    List<CarEntity> findByOrderByCreateTimeDesc(Pageable pageable);
 
     // Fetch top 6 trending cars based on wishlist count (assuming WishlistEntity exists)
     @Query("SELECT c FROM CarEntity c LEFT JOIN WishlistEntity w ON c.id = w.car.id " +
@@ -108,4 +110,23 @@ public interface CarRepository extends JpaRepository<CarEntity, Long> {
 
     // Fetch top 6 cars regardless (allcars)
    // List<CarEntity> findTop6ByOrderByCreateTimeDesc();
+
+    @Query("SELECT new com.data.pojo.response.CarBasicDTO(" +
+            "c.id, c.title, c.make, c.model, c.type, c.year, " +
+            "c.condition, c.stockNumber, c.vinNumber, c.regularPrice, c.salePrice, c.requestPrice, " +
+            "c.description, c.priceLabel, c.createTime, c.updateTime, " +
+            "new com.data.pojo.response.CarMediaDTO(" +
+            "CASE WHEN m.photo1 IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/photo1') ELSE null END, " +
+            "CASE WHEN m.photo2 IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/photo2') ELSE null END, " +
+            "CASE WHEN m.photo3 IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/photo3') ELSE null END, " +
+            "CASE WHEN m.photo4 IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/photo4') ELSE null END, " +
+            "CASE WHEN m.photo5 IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/photo5') ELSE null END, " +
+            "m.videoUrl, " +
+            "CASE WHEN m.vinReport IS NOT NULL THEN CONCAT('/api/cars/media/', c.id, '/vinReport') ELSE null END" +
+            ")" +
+            ") FROM CarEntity c LEFT JOIN c.media m " +
+            "WHERE c.type = :type " +
+            "ORDER BY c.createTime DESC")
+    List<CarBasicDTO> findByTypeDTO(@Param("type") String type, Pageable pageable);
+
 }

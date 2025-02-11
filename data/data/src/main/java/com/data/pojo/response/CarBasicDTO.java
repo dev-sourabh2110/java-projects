@@ -1,7 +1,6 @@
 package com.data.pojo.response;
 
 import java.sql.Timestamp;
-import java.util.List;
 
 public class CarBasicDTO {
     private Long id;
@@ -22,8 +21,7 @@ public class CarBasicDTO {
     private Timestamp updateTime;
     private CarMediaDTO media;
 
-    public CarBasicDTO() {
-    }
+    public CarBasicDTO() {}
 
     public CarBasicDTO(Long id, String title, String make, String model, String type, String year,
                        String condition, String stockNumber, String vinNumber, Double regularPrice,
@@ -48,26 +46,15 @@ public class CarBasicDTO {
         this.media = media;
     }
 
-    // Getters and Setters
+    // Getters and setters (omitted for brevity)
 
-    // ... (omitted for brevity)
-    
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    // (include getters and setters for all fields)
-    
-    public CarMediaDTO getMedia() {
-        return media;
-    }
-
-    public void setMedia(CarMediaDTO media) {
-        this.media = media;
     }
 
     public String getTitle() {
@@ -188,5 +175,13 @@ public class CarBasicDTO {
 
     public void setUpdateTime(Timestamp updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public CarMediaDTO getMedia() {
+        return media;
+    }
+
+    public void setMedia(CarMediaDTO media) {
+        this.media = media;
     }
 }

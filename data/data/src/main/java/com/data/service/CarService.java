@@ -7,7 +7,11 @@ import com.data.pojo.response.CarMediaDTO;
 import com.data.pojo.response.CarSearchDTO;
 import com.data.repository.CarMediaRepository;
 import com.data.repository.CarRepository;
+import com.data.specification.CarSpecification;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -203,8 +207,8 @@ public class CarService {
     }
 
     // 2. Get trending cars based on wishlist counts (limited to 6)
-    public List<CarBasicDTO> getTrendingCars() {
-        List<CarEntity> trendingCars = carRepository.findTrendingCars(PageRequest.of(0, 6));
+    public List<CarBasicDTO> getTrendingCars(int page, int size) {
+        List<CarEntity> trendingCars = carRepository.findTrendingCars(PageRequest.of(page, size));
         return getCarBasicDTOList(trendingCars);
     }
 
@@ -215,15 +219,53 @@ public class CarService {
     }
 
     // 4. Get recently added cars (limited to 6) ordered by createTime descending
-    public List<CarBasicDTO> getRecentlyAddedCars() {
-        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findTop6ByOrderByCreateTimeDesc();
+    public List<CarBasicDTO> getRecentlyAddedCars(int page, int size) {
+        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"))).stream().toList();
         return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
     }
 
     // 5. Get all cars (limited to 6) – for a general “all cars” category
-    public List<CarBasicDTO> getAllCarsLimited() {
-        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findTop6ByOrderByCreateTimeDesc();
+    public List<CarBasicDTO> getAllCarsLimited(int page, int size) {
+        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findByOrderByCreateTimeDesc(PageRequest.of(page, size));
         return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
+    }
+
+    // Get cars by type using page number and page size
+    public List<CarBasicDTO> getCarsByType(String type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return carRepository.findByTypeDTO(type, pageable);
+    }
+
+    public List<CarBasicDTO> searchCars(String filterField, String filterValue, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        // Build Specification dynamically based on filterField and filterValue
+        var spec = new CarSpecification(filterField, filterValue);
+        Page<CarEntity> resultPage = carRepository.findAll(spec, pageable);
+        // Map CarEntity to CarBasicDTO (you can do this manually or use a mapper)
+        return resultPage.stream().map(car -> {
+            // For media, you may want to build a CarMediaDTO as shown in previous examples
+            // Here is a simplified mapping:
+            CarMediaEntity media = car.getMedia();
+            CarMediaDTO carMediaDTO = null;
+            if (null != media) {
+                carMediaDTO = new CarMediaDTO(
+                        media.getPhoto1() != null ? "/api/cars/media/" + car.getId() + "/photo1" : null,
+                        media.getPhoto2() != null ? "/api/cars/media/" + car.getId() + "/photo2" : null,
+                        media.getPhoto3() != null ? "/api/cars/media/" + car.getId() + "/photo3" : null,
+                        media.getPhoto4() != null ? "/api/cars/media/" + car.getId() + "/photo4" : null,
+                        media.getPhoto5() != null ? "/api/cars/media/" + car.getId() + "/photo5" : null,
+                        media.getVideoUrl(),
+                        media.getVinReport() != null ? "/api/cars/media/" + car.getId() + "/vinReport" : null
+                );
+            }
+            return new CarBasicDTO(
+                    car.getId(), car.getTitle(), car.getMake(), car.getModel(), car.getType(),
+                    car.getYear(), car.getCondition(), car.getStockNumber(), car.getVinNumber(),
+                    car.getRegularPrice(), car.getSalePrice(), car.getRequestPrice(),
+                    car.getDescription(), car.isPriceLabel(), car.getCreateTime(), car.getUpdateTime(),
+                    carMediaDTO // You can map media here if needed
+            );
+        }).collect(Collectors.toList());
     }
 }
 
