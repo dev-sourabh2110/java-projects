@@ -1,5 +1,6 @@
 package com.data.service;
 
+import com.data.dto.CarResponseDTO;
 import com.data.entity.*;
 import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
@@ -8,10 +9,13 @@ import com.data.pojo.response.CarSearchDTO;
 import com.data.repository.CarMediaRepository;
 import com.data.repository.CarRepository;
 import com.data.specification.CarSpecification;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,7 +59,7 @@ public class CarService {
         return features;
     }
 
-    public CarMediaEntity saveCarMedia(Long carId, MultipartFile photo1,
+    public ResponseEntity<String> saveCarMedia(Long carId, MultipartFile photo1,
                                        MultipartFile photo2,
                                        MultipartFile photo3,
                                        MultipartFile photo4,
@@ -63,12 +67,18 @@ public class CarService {
                                        String videoUrl, MultipartFile vinReport) {
         Optional<CarEntity> carEntity = carRepository.findById(carId);
         if (carEntity.isEmpty()) {
-            return null;
-            //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found.");
+            //return null;
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found.");
         }
 
-        CarMediaEntity carMedia = new CarMediaEntity();
-        carMedia.setCar(carEntity.get());
+        CarMediaEntity carMedia;
+        Optional<CarMediaEntity> byCarId = carMediaRepository.findByCarId(carId);
+        if (byCarId.isPresent()) {
+            carMedia = byCarId.get();
+        } else {
+            carMedia = new CarMediaEntity();
+            carMedia.setCar(carEntity.get());
+        }
 
         try {
             if (photo1 != null) {
@@ -91,11 +101,11 @@ public class CarService {
             }
             carMedia.setVideoUrl(videoUrl);
 
-            return carMediaRepository.save(carMedia);
-            //return media;
+            carMediaRepository.save(carMedia);
+            return ResponseEntity.ok("Car media saved successfully.");
         } catch (IOException e) {
-            return null;
-            // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save media files.");
+          //  return null;
+             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save media files.");
         }
     }
 
@@ -108,8 +118,25 @@ public class CarService {
         return address;
     }
 
-    public List<CarEntity> getCarsByVendor(Long vendorId) {
-        return carRepository.findByVendorId(vendorId);
+//    public List<CarEntity> getCarsByVendor(Long vendorId) {
+//        return carRepository.findByVendorId(vendorId);
+//    }
+
+    public List<CarResponseDTO> getCarsByVendor(Long vendorId) {
+        return carRepository.findByVendorId(vendorId)
+                .stream()
+                .map(car -> new CarResponseDTO(
+                        car.getId(),
+                        car.getTitle(),
+                        car.getMake(),
+                        car.getModel(),
+                        car.getType(),
+                        car.getStatus(),
+                        car.getRegularPrice(),
+                        car.getCreateTime(),
+                        car.getUpdateTime()
+                ))
+                .collect(Collectors.toList());
     }
 
     public List<CarEntity> getSimilarProducts(String category, String brand) {
@@ -266,6 +293,55 @@ public class CarService {
                     carMediaDTO // You can map media here if needed
             );
         }).collect(Collectors.toList());
+    }
+
+    /**
+     * Fetch cars based on status (Pending, Approved, Rejected, etc.)
+     */
+    public List<CarResponseDTO> getCarsByStatus(String status) {
+        return carRepository.findByStatus(status)
+                .stream()
+                .map(car -> new CarResponseDTO(
+                        car.getId(), car.getTitle(), car.getMake(), car.getModel(),
+                        car.getType(), car.getStatus(), car.getRegularPrice(),
+                        car.getCreateTime(), car.getUpdateTime()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Approve a car listing
+     */
+    @Transactional
+    public void approveCar(Long carId) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
+
+        car.setStatus("APPROVED");
+        carRepository.save(car);
+    }
+
+    /**
+     * Reject a car listing
+     */
+    @Transactional
+    public void rejectCar(Long carId) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
+
+        car.setStatus("REJECTED");
+        carRepository.save(car);
+    }
+
+    /**
+     * Delete a car listing
+     */
+    @Transactional
+    public void deleteCar(Long carId) {
+        if (!carRepository.existsById(carId)) {
+            throw new RuntimeException("Car not found with ID: " + carId);
+        }
+        carRepository.deleteById(carId);
     }
 }
 

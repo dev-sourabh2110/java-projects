@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,7 +49,26 @@ public class UserEntity {
     @NotEmpty(message = "Address is required")
     private String address;
 
+    private boolean enabled;
+
+    // Timestamp fields for tracking creation and update times
+    @Column(name = "create_time", nullable = false, updatable = false)
+    private Timestamp createTime;
+    @Column(name = "update_time", nullable = false)
+    private Timestamp updateTime;
+
+    @Column(name = "temp_password_expiry")
+    private Timestamp tempPasswordExpiry;
+
     // Getters and Setters
+
+    public Timestamp getTempPasswordExpiry() {
+        return tempPasswordExpiry;
+    }
+
+    public void setTempPasswordExpiry(Timestamp tempPasswordExpiry) {
+        this.tempPasswordExpiry = tempPasswordExpiry;
+    }
 
 
     public Long getId() {
@@ -121,5 +141,42 @@ public class UserEntity {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public Timestamp getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Timestamp createTime) {
+        this.createTime = createTime;
+    }
+
+    public Timestamp getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Timestamp updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    // Auto-update timestamps
+    @PrePersist
+    protected void onCreate() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        this.createTime = now;
+        this.updateTime = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateTime = new Timestamp(System.currentTimeMillis());
     }
 }

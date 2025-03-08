@@ -1,17 +1,16 @@
 package com.data.controller;
 
+import com.data.dto.ForgotPasswordRequest;
+import com.data.dto.ForgotPasswordResponse;
+import com.data.dto.LoginResponse;
 import com.data.pojo.ForgetPasswordRequest;
-import com.data.pojo.LoginRequest;
 import com.data.service.LoginService;
 import com.data.service.PasswordResetService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.HttpServletBean;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,23 +23,19 @@ public class AuthenticationController {
     private PasswordResetService passwordResetService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(HttpServletRequest request) {
-        request.getHeader("User-Type");
-      //  boolean isAuthenticated = loginService.authenticateUser(loginRequest);
-
-      //  if (isAuthenticated) {
-            return ResponseEntity.ok("Login successful");
-       // }
-       // return ResponseEntity.status(401).body("Invalid credentials");
+    public ResponseEntity<LoginResponse> login(HttpServletRequest request) {
+       // request.getHeader("User-Type");
+        return loginService.loginResponse();
     }
 
-    @PostMapping("/forget-password")
-    public ResponseEntity<String> forgetPassword(@RequestBody @Valid ForgetPasswordRequest forgetPasswordRequest) {
-        String password = passwordResetService.getUserPassword(forgetPasswordRequest);
-        if (password != null) {
-            return ResponseEntity.ok("Your password is: " + password);
-        }
-        return ResponseEntity.status(404).body("User not found.");
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        String temporaryPassword = passwordResetService.generateTemporaryPassword(request.emailOrPhone());
+        ForgotPasswordResponse response = new ForgotPasswordResponse(
+                temporaryPassword,
+                "Temporary password is valid for 10 minutes. Please change your password after login."
+        );
+        return ResponseEntity.ok(response);
     }
 }
 

@@ -36,7 +36,7 @@ public class ProfileController {
     }
 
     // Change password
-    @Secured("USER")
+    @Secured({"ROLE_USER","ROLE_VENDOR","ROLE_ADMIN"})
     @PutMapping("/{userEmail}/change-password")
     public ResponseEntity<String> changePassword(@PathVariable String userEmail, @RequestBody
 

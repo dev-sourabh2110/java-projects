@@ -69,7 +69,7 @@ public class TestDriveController {
         UserEntity user = userOptional.get();
 
         // Step 2: Fetch the test drives linked to this user
-        List<Appointment> appointments = appointmentRepository.findByTestDriveEmail(userDetails.getUsername());
+        List<Appointment> appointments = null;//appointmentRepository.findByTestDriveID(1L);
 
         // Step 3: Convert to DTOs
         List<AppointmentDTO> appointmentDTOs = appointments.stream()

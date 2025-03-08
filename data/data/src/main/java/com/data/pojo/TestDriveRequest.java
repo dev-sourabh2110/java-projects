@@ -1,48 +1,26 @@
 package com.data.pojo;
 
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.Date;
 
 public class TestDriveRequest {
 
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
+    @NotEmpty(message = "Car ID is required")
+    private Long carId;
+
     private String drivingLicenseNumber;
     private AppointmentRequest appointmentRequest; // New field for Appointment Request
 
     // Getters and Setters
 
-    public String getName() {
-        return name;
+
+    public Long getCarId() {
+        return carId;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCarId(Long carId) {
+        this.carId = carId;
     }
 
     public String getDrivingLicenseNumber() {

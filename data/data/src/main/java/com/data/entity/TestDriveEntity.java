@@ -3,38 +3,43 @@ package com.data.entity;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "test_drive")
-public class TestDrive {
+public class TestDriveEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
+    private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
+
+    @ManyToOne
+    @JoinColumn(name = "car_id", nullable = false)
+    private CarEntity car;
+
     private String drivingLicenseNumber;
     private Timestamp createTime;
     private Timestamp updateTime;
-
-    @OneToMany(mappedBy = "testDrive", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Appointment> appointments = new HashSet<>();
+//
+//    @OneToMany(mappedBy = "test_drive_id", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private Set<Appointment> appointments = new HashSet<>();
 
     // Getters and Setters
-
-    public Set<Appointment> getAppointments() {
-        return appointments;
-    }
-
-    public void setAppointments(Set<Appointment> appointments) {
-        this.appointments = appointments;
-    }
+//
+//    public Set<Appointment> getAppointments() {
+//        return appointments;
+//    }
+//
+//    public void setAppointments(Set<Appointment> appointments) {
+//        this.appointments = appointments;
+//    }
 
     // Other Getters and Setters for other fields
 
@@ -46,36 +51,20 @@ public class TestDrive {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
-    public String getEmail() {
-        return email;
+    public CarEntity getCar() {
+        return car;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCar(CarEntity car) {
+        this.car = car;
     }
 
     public String getDrivingLicenseNumber() {

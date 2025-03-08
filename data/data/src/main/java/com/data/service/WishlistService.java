@@ -20,7 +20,7 @@ public class WishlistService {
     private UserRepository userRepository;
 
     public String addToWishlist(String userEmail, Long carId) {
-        var user = userRepository.findById(userEmail)
+        var user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         var car = carRepository.findById(carId)
                 .orElseThrow(() -> new IllegalArgumentException("Car not found"));

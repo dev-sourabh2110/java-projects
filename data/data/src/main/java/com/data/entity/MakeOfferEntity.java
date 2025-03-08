@@ -15,18 +15,15 @@ public class MakeOfferEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Auto-generated ID
 
-    @NotEmpty(message = "Name is required")
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    @NotEmpty(message = "Email is required")
-    @Email(message = "Please provide a valid email")
-    private String email;
+    @ManyToOne
+    @JoinColumn(name = "car_id", nullable = false)
+    private CarEntity car;
 
-    @NotEmpty(message = "Phone number is required")
-    private String phoneNumber;
-
-    @NotEmpty(message = "Address is required")
-    private String address;
+    private String status; // PENDING, APPROVED, REJECTED
 
     @NotEmpty(message = "Driving License Number is required")
     private String drivingLicenseNumber;
@@ -49,36 +46,20 @@ public class MakeOfferEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
-    public String getEmail() {
-        return email;
+    public CarEntity getCar() {
+        return car;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCar(CarEntity car) {
+        this.car = car;
     }
 
     public String getDrivingLicenseNumber() {
@@ -119,5 +100,13 @@ public class MakeOfferEntity {
 
     public void setUpdateTime(Timestamp updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

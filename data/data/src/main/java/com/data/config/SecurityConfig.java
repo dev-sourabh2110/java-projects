@@ -3,6 +3,7 @@ package com.data.config;
 //import com.data.service.AdminDetailsService;
 import com.data.service.CustomUserDetailsService;
 //import com.data.service.VendorDetailsService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +34,9 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${app.security.enabled}") // Read the property
+    private boolean securityEnabled;
+
     private final CustomUserDetailsService customUserDetailsService;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService) {
@@ -41,49 +45,64 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http              .anonymous(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers("/h2-console/**").permitAll()  // Allow H2 Console access
-                                .requestMatchers("/api/auth/login", "/api/auth/forget-password", "/api/public/register", "/api/vendors/register", "/api/admin/register").permitAll()  // Public APIs
-
-                                // USER role-specific access
-                                .requestMatchers(HttpMethod.GET, "/api/wishlist/**").hasRole("USER")
-                                .requestMatchers(HttpMethod.GET, "/api/profile/**").hasRole("USER")
-                                .requestMatchers(HttpMethod.POST, "/api/wishlist/**").hasRole("USER")
-
-                                // VENDOR role-specific access
-                                .requestMatchers(HttpMethod.GET, "/api/vendors/**").hasRole("VENDOR")
-                                .requestMatchers(HttpMethod.POST, "/api/cars/**").hasRole("VENDOR")
-                                .requestMatchers(HttpMethod.GET, "/api/cars/**").hasRole("VENDOR")
-                                .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("VENDOR")
-
-                                // ADMIN role-specific access
-                                .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasRole("ADMIN")
-
-                                // Shared access: USER and VENDOR
-                                .requestMatchers(HttpMethod.GET, "/api/cars/**").hasAnyRole("USER", "VENDOR")
-                                .requestMatchers(HttpMethod.POST, "/api/cars/**").hasAnyRole("USER", "VENDOR")
-
-                                // All other requests require authentication
-                                .anyRequest().authenticated()
-                )
-                .httpBasic(httpBasic -> {
-                })
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")
-                )
-                .headers(headers ->
-                        headers
-                                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
-                )
-                .csrf(AbstractHttpConfigurer::disable);
-
+        if (securityEnabled) {
+            // 🔒 Security ENABLED: Enforce authentication/authorization
+            configureSecurityEnabled(http);
+        } else {
+            // 🔓 Security DISABLED: Permit all requests
+            configureSecurityDisabled(http);
+        }
         return http.build();
     }
 
+    private void configureSecurityEnabled(HttpSecurity http) throws Exception {
+        http
+            .anonymous(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(authorizeRequests ->
+                authorizeRequests
+                    .requestMatchers("/h2-console/**").permitAll()
+                    .requestMatchers(
+                        "/api/auth/login",
+                        "/api/auth/forgot-password",
+                        "/api/auth/forget-password",
+                        "/api/public/register",
+                        "/api/vendors/register",
+                        "/api/admin/register",
+                            "/api/cars/**"
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/wishlist/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/api/profile/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.POST, "/api/wishlist/**").hasRole("USER")
+                    .requestMatchers(HttpMethod.GET, "/api/vendors/**").hasRole("VENDOR")
+                 //   .requestMatchers(HttpMethod.POST, "/api/cars/**").hasRole("VENDOR")
+                  //  .requestMatchers(HttpMethod.GET, "/api/cars/**").hasRole("VENDOR")
+                   // .requestMatchers(HttpMethod.PUT, "/api/cars/**").hasRole("VENDOR")
+                    .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasRole("ADMIN")
+//                    .requestMatchers(HttpMethod.GET, "/api/cars/**").hasAnyRole("USER", "VENDOR")
+                    .requestMatchers(HttpMethod.POST, "/api/cars/**").hasAnyRole("USER", "VENDOR")
+                    .anyRequest().authenticated()
+            )
+            .httpBasic(Customizer.withDefaults())
+            .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers ->
+                headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+            );
+    }
+
+    private void configureSecurityDisabled(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll() // Allow all requests
+            )
+            .csrf(AbstractHttpConfigurer::disable)
+            .headers(headers ->
+                headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+            );
+    }
+
+    // Keep existing beans (PasswordEncoder, AuthenticationManager, etc.)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();  // Secure passwords with BCrypt

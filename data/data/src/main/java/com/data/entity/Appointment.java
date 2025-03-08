@@ -16,7 +16,7 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "test_drive_id", referencedColumnName = "id", nullable = false)
-    private TestDrive testDrive;
+    private TestDriveEntity testDriveEntity;
 
     // Getters and Setters
     public Long getId() {
@@ -43,11 +43,11 @@ public class Appointment {
         this.appointmentDate = appointmentDate;
     }
 
-    public TestDrive getTestDrive() {
-        return testDrive;
+    public TestDriveEntity getTestDrive() {
+        return testDriveEntity;
     }
 
-    public void setTestDrive(TestDrive testDrive) {
-        this.testDrive = testDrive;
+    public void setTestDrive(TestDriveEntity testDriveEntity) {
+        this.testDriveEntity = testDriveEntity;
     }
 }

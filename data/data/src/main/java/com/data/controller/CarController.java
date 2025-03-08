@@ -1,5 +1,6 @@
 package com.data.controller;
 
+import com.data.dto.CarResponseDTO;
 import com.data.entity.*;
 import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
@@ -44,10 +45,10 @@ CarMediaRepository carMediaRepository,
     }
 
     @PostMapping("/add-basic")
-    public ResponseEntity<Map<String, Object>> addBasicCarDetails(@RequestBody CarEntity car) {
+    public ResponseEntity<Map<String, Object>> addBasicCarDetails(@RequestBody CarEntity car, @RequestParam Long vendorID) {
         // Fetch the logged-in vendor
-        String loggedInEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        VendorEntity vendor = vendorRepository.findByUserEmail(loggedInEmail)
+    //    String loggedInEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        VendorEntity vendor = vendorRepository.findByUserId(vendorID)
                 .orElseThrow(() -> new RuntimeException("Vendor not found"));
         car.setVendor(vendor);
         CarEntity savedCar = carService.saveBasicCarDetails(car);
@@ -81,13 +82,11 @@ CarMediaRepository carMediaRepository,
             @RequestParam(required = false) String videoUrl,
             @RequestParam(required = false) MultipartFile vinReport) {
 
-        carService.saveCarMedia(carId, photo1,
+        return carService.saveCarMedia(carId, photo1,
                 photo2,
                 photo3,
                 photo4,
                 photo5,videoUrl,vinReport);
-
-            return ResponseEntity.ok("Car media saved successfully.");
 
     }
 
@@ -100,13 +99,13 @@ CarMediaRepository carMediaRepository,
         return ResponseEntity.ok("Car address saved.");
     }
 
-//    @GetMapping
-//    public ResponseEntity<List<CarEntity>> getCarsByVendor(@RequestParam Long vendorId) {
-//        List<CarEntity> cars = carService.getCarsByVendor(vendorId);
-//        return ResponseEntity.ok(cars);
-//    }
+    @GetMapping("/vendor")
+    public ResponseEntity<List<CarResponseDTO>> getCarsByVendor(@RequestParam Long vendorId) {
+        List<CarResponseDTO> cars = carService.getCarsByVendor(vendorId);
+        return ResponseEntity.ok(cars);
+    }
 
-    @Secured({"USER", "VENDOR"})
+  //  @Secured({"USER", "VENDOR"})
     @GetMapping("/{carId}/similar")
     public ResponseEntity<List<CarEntity>> getSimilarProducts(@PathVariable Long carId) {
         CarEntity car = carService.getCarDetails(carId);

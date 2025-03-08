@@ -1,6 +1,7 @@
 package com.data.repository;
 
 import com.data.entity.CarEntity;
+import com.data.entity.VendorEntity;
 import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,16 @@ import java.util.List;
 
 @Repository
 public interface CarRepository extends JpaRepository<CarEntity, Long>, JpaSpecificationExecutor<CarEntity> {
+
+    List<CarEntity> findByStatus(String status);
+
+    @Query("SELECT SUM(c.salePrice) FROM CarEntity c WHERE c.status = 'SOLD'")
+    Double getTotalRevenue();
+
+    @Query("SELECT c.model FROM CarEntity c WHERE c.status = 'SOLD' GROUP BY c.model ORDER BY COUNT(c.id) DESC LIMIT 1")
+    String getMostSoldCar();
+
+    void deleteAllByVendor(VendorEntity vendor); // Custom method to delete all cars of a vendor
 
     @Query("SELECT c FROM CarEntity c " +
             "WHERE LOWER(c.model) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
