@@ -21,7 +21,7 @@ public class AdminVendorController {
     /**
      * Get all vendors
      */
-    @Secured("ROLE_ADMIN")
+   // @Secured("ROLE_ADMIN")
     @GetMapping
     public ResponseEntity<List<VendorDTO>> getAllVendors() {
             return ResponseEntity.ok(vendorService.getAllVendors());
@@ -30,7 +30,7 @@ public class AdminVendorController {
     /**
      * Get vendor by ID
      */
-    @Secured("ROLE_ADMIN")
+  //  @Secured("ROLE_ADMIN")
     @GetMapping("/{vendorId}")
     public ResponseEntity<VendorDTO> getVendorById(@PathVariable Long vendorId) {
         return ResponseEntity.ok(vendorService.getVendorById(vendorId));

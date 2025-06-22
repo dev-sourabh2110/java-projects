@@ -1,5 +1,6 @@
 package com.data.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
@@ -38,22 +39,27 @@ public class CarEntity {
     @Column(name = "update_time", nullable = false)
     private Timestamp updateTime;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
     @JsonManagedReference // Prevent infinite recursion
     private CarSpecificationsEntity specifications;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
     @JsonManagedReference // Prevent infinite recursion
     private CarFeaturesEntity features;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
     @JsonManagedReference // Prevent infinite recursion
     private CarMediaEntity media;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "car", fetch = FetchType.LAZY)
     @JsonManagedReference // Prevent infinite recursion
     private CarAddressEntity address;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_id", nullable = false)
     @JsonManagedReference // Prevent infinite recursion

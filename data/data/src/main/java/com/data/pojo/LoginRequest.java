@@ -2,6 +2,8 @@ package com.data.pojo;
 
 import jakarta.validation.constraints.NotEmpty;
 
+import jakarta.validation.constraints.NotEmpty;
+
 public class LoginRequest {
 
     @NotEmpty(message = "Email or Phone is required")

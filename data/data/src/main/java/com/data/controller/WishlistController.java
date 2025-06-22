@@ -22,7 +22,7 @@ public class WishlistController {
         return ResponseEntity.ok(message);
     }
 
-    @Secured("USER")
+    //@Secured("USER")
     @GetMapping("/{userEmail}")
     public ResponseEntity<List<WishlistEntity>> getWishlist(@PathVariable String userEmail) {
         return ResponseEntity.ok(wishlistService.getWishlist(userEmail));

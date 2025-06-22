@@ -4,6 +4,7 @@ import com.data.entity.CarEntity;
 import com.data.entity.VendorEntity;
 import com.data.pojo.response.CarBasicDTO;
 import com.data.pojo.response.CarDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -140,4 +141,9 @@ public interface CarRepository extends JpaRepository<CarEntity, Long>, JpaSpecif
             "ORDER BY c.createTime DESC")
     List<CarBasicDTO> findByTypeDTO(@Param("type") String type, Pageable pageable);
 
+    Page<CarEntity> findByType(String type, Pageable pageable);
+
+    Page<CarEntity> findByMake(String make, Pageable pageable);
+
+    List<CarEntity> findByTypeAndModelAndIdNot(String type, String model, Long carId);
 }

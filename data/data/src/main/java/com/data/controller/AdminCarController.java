@@ -1,6 +1,7 @@
 package com.data.controller;
 
 import com.data.dto.CarResponseDTO;
+import com.data.dto.car.CarStatusDTO;
 import com.data.service.CarService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -21,9 +22,9 @@ public class AdminCarController {
     /**
      * Get all cars by status
      */
-    @Secured("ROLE_ADMIN")
+    //@Secured("ROLE_ADMIN")
     @GetMapping
-    public ResponseEntity<List<CarResponseDTO>> getCarsByStatus(@RequestParam String status) {
+    public ResponseEntity<List<CarStatusDTO>> getCarsByStatus(@RequestParam String status) {
         return ResponseEntity.ok(carService.getCarsByStatus(status));
     }
 

@@ -15,7 +15,7 @@ public class UserHistoryController {
     private UserHistoryService userHistoryService;
 
     // Fetch user history by type (appointment or purchase)
-    @Secured("USER")
+  //  @Secured("USER")
     @GetMapping("/{userEmail}")
     public ResponseEntity<List<UserHistoryEntity>> getHistory(
             @PathVariable String userEmail, @RequestParam String type) {

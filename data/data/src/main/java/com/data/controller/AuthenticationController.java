@@ -4,6 +4,7 @@ import com.data.dto.ForgotPasswordRequest;
 import com.data.dto.ForgotPasswordResponse;
 import com.data.dto.LoginResponse;
 import com.data.pojo.ForgetPasswordRequest;
+import com.data.pojo.LoginRequest;
 import com.data.service.LoginService;
 import com.data.service.PasswordResetService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +25,8 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(HttpServletRequest request) {
-       // request.getHeader("User-Type");
+        // The authentication is already handled by Spring Security
+        // Just return the login response based on the authenticated user
         return loginService.loginResponse();
     }
 

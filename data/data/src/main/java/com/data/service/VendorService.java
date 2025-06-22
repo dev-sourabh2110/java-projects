@@ -36,32 +36,40 @@ public class VendorService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void registerVendor(String firstName, String lastName, String email, String password, String phoneNumber,
+    @Transactional
+    public Long registerVendor(String firstName, String lastName, String email, String password, String phoneNumber,
                                String address, String tradeLicenseNumber, Date dob) {
-        // Create UserEntity
-        UserEntity user = new UserEntity();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setPhoneNumber(phoneNumber);
-        user.setAddress(address);
-        user.setDob(dob);
+        try {
+            // Create UserEntity
+            UserEntity user = new UserEntity();
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setPhoneNumber(phoneNumber);
+            user.setAddress(address);
+            user.setDob(dob);
 
-        // Assign VENDOR role
-        Role vendorRole = roleRepository.findByName("VENDOR")
-                .orElseThrow(() -> new RuntimeException("Role VENDOR not found"));
-        user.setRoles(Collections.singleton(vendorRole));
+            // Assign VENDOR role
+            Role vendorRole = roleRepository.findByName("VENDOR")
+                    .orElseThrow(() -> new RuntimeException("Role VENDOR not found"));
+            user.setRoles(Collections.singleton(vendorRole));
 
-        user = userRepository.save(user);
+            user = userRepository.saveAndFlush(user);
+            System.out.println("User saved: " + user.getId());
+            // Create VendorEntity
+            VendorEntity vendor = new VendorEntity();
+            vendor.setUser(user);
+            vendor.setTradeLicenseNumber(tradeLicenseNumber);
+            vendor.setEnabled(false); // Requires admin approval
 
-        // Create VendorEntity
-        VendorEntity vendor = new VendorEntity();
-        vendor.setUser(user);
-        vendor.setTradeLicenseNumber(tradeLicenseNumber);
-        vendor.setEnabled(false); // Requires admin approval
-
-        vendorRepository.save(vendor);
+            vendor = vendorRepository.saveAndFlush(vendor);
+            System.out.println(vendor.getId());
+            return vendor.getId(); // Return the vendor ID
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error registering vendor: " + e.getMessage());
+        }
     }
 
     /**

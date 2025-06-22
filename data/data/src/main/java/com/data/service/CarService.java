@@ -1,46 +1,75 @@
 package com.data.service;
 
-import com.data.dto.CarResponseDTO;
+import com.data.dto.car.*;
 import com.data.entity.*;
-import com.data.pojo.response.CarBasicDTO;
-import com.data.pojo.response.CarDTO;
-import com.data.pojo.response.CarMediaDTO;
-import com.data.pojo.response.CarSearchDTO;
-import com.data.repository.CarMediaRepository;
-import com.data.repository.CarRepository;
+import com.data.enums.CarStatus;
+import com.data.mapper.CarMapper;
+import com.data.repository.*;
 import com.data.specification.CarSpecification;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class CarService {
 
     private final CarRepository carRepository;
+    private final CarSpecificationsRepository carSpecificationsRepository;
+    private final CarFeaturesRepository carFeaturesRepository;
     private final CarMediaRepository carMediaRepository;
+    private final CarAddressRepository carAddressRepository;
 
-    public CarService(CarRepository carRepository, CarMediaRepository carMediaRepository) {
+    @Autowired
+    public CarService(CarRepository carRepository,
+                     CarSpecificationsRepository carSpecificationsRepository,
+                     CarFeaturesRepository carFeaturesRepository,
+                     CarMediaRepository carMediaRepository,
+                     CarAddressRepository carAddressRepository) {
         this.carRepository = carRepository;
+        this.carSpecificationsRepository = carSpecificationsRepository;
+        this.carFeaturesRepository = carFeaturesRepository;
         this.carMediaRepository = carMediaRepository;
+        this.carAddressRepository = carAddressRepository;
     }
 
-
-    public CarEntity saveBasicCarDetails(CarEntity car) {
-        return carRepository.save(car);
+    /**
+     * Save basic car details
+     */
+    @Transactional
+    public CarEntity saveBasicCarDetails(CarCreateDTO carCreateDTO, VendorEntity vendor) {
+        CarEntity car = CarMapper.toEntity(carCreateDTO, vendor);
+        try {
+            return carRepository.save(car);
+        } catch (TransactionSystemException | CannotAcquireLockException e) {
+            // Log the error
+            System.out.println("Transaction failed, retrying: " + e.getMessage());
+            // Sleep for a brief period to allow locks to clear
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+            // Try again
+            return carRepository.save(car);
+        }
     }
 
+    /**
+     * Save car specifications
+     */
+    @Transactional
     public CarSpecificationsEntity saveCarSpecifications(Long carId, CarSpecificationsEntity specifications) {
         CarEntity car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
@@ -50,6 +79,10 @@ public class CarService {
         return specifications;
     }
 
+    /**
+     * Save car features
+     */
+    @Transactional
     public CarFeaturesEntity saveCarFeatures(Long carId, CarFeaturesEntity features) {
         CarEntity car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
@@ -59,26 +92,32 @@ public class CarService {
         return features;
     }
 
-    public ResponseEntity<String> saveCarMedia(Long carId, MultipartFile photo1,
-                                       MultipartFile photo2,
-                                       MultipartFile photo3,
-                                       MultipartFile photo4,
-                                       MultipartFile photo5,
-                                       String videoUrl, MultipartFile vinReport) {
-        Optional<CarEntity> carEntity = carRepository.findById(carId);
-        if (carEntity.isEmpty()) {
-            //return null;
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found.");
-        }
+    /**
+     * Save car media files
+     */
+    @Transactional
+    public Map<String, Object> saveCarMedia(Long carId, MultipartFile photo1,
+                                          MultipartFile photo2,
+                                          MultipartFile photo3,
+                                          MultipartFile photo4,
+                                          MultipartFile photo5,
+                                          String videoUrl,
+                                          MultipartFile vinReport) {
+        Map<String, Object> response = new HashMap<>();
 
-        CarMediaEntity carMedia;
-        Optional<CarMediaEntity> byCarId = carMediaRepository.findByCarId(carId);
-        if (byCarId.isPresent()) {
-            carMedia = byCarId.get();
-        } else {
-            carMedia = new CarMediaEntity();
-            carMedia.setCar(carEntity.get());
-        }
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> {
+                    response.put("success", false);
+                    response.put("message", "Car not found with ID: " + carId);
+                    return new RuntimeException("Car not found");
+                });
+
+        CarMediaEntity carMedia = carMediaRepository.findByCarId(carId)
+                .orElseGet(() -> {
+                    CarMediaEntity newMedia = new CarMediaEntity();
+                    newMedia.setCar(car);
+                    return newMedia;
+                });
 
         try {
             if (photo1 != null) {
@@ -102,13 +141,21 @@ public class CarService {
             carMedia.setVideoUrl(videoUrl);
 
             carMediaRepository.save(carMedia);
-            return ResponseEntity.ok("Car media saved successfully.");
+
+            response.put("success", true);
+            response.put("message", "Car media saved successfully");
+            return response;
         } catch (IOException e) {
-          //  return null;
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to save media files.");
+            response.put("success", false);
+            response.put("message", "Failed to save media files: " + e.getMessage());
+            return response;
         }
     }
 
+    /**
+     * Save car address
+     */
+    @Transactional
     public CarAddressEntity saveCarAddress(Long carId, CarAddressEntity address) {
         CarEntity car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found"));
@@ -118,219 +165,144 @@ public class CarService {
         return address;
     }
 
-//    public List<CarEntity> getCarsByVendor(Long vendorId) {
-//        return carRepository.findByVendorId(vendorId);
-//    }
-
-    public List<CarResponseDTO> getCarsByVendor(Long vendorId) {
-        return carRepository.findByVendorId(vendorId)
-                .stream()
-                .map(car -> new CarResponseDTO(
-                        car.getId(),
-                        car.getTitle(),
-                        car.getMake(),
-                        car.getModel(),
-                        car.getType(),
-                        car.getStatus(),
-                        car.getRegularPrice(),
-                        car.getCreateTime(),
-                        car.getUpdateTime()
-                ))
-                .collect(Collectors.toList());
-    }
-
-    public List<CarEntity> getSimilarProducts(String category, String brand) {
-        return carRepository.findByTypeAndModel(category, brand);
-    }
-
-    public CarEntity getCarDetails(Long carId) {
-        return carRepository.findById(carId)
-                .orElseThrow(() -> new IllegalArgumentException("Car not found"));
-    }
-
-    public List<CarDTO> getAllCarsBasicDetails() {
-        return carRepository.findAllBasicDetails();
-    }
-
-    public List<CarSearchDTO> searchCars(String keyword) {
-        List<CarEntity> cars = carRepository.searchByKeyword(keyword);
-        List<CarSearchDTO> searchResults = new ArrayList<>();
-
-        for (CarEntity car : cars) {
-            // Fetch all photos for the car
-            Optional<CarMediaEntity> carMedia = carMediaRepository.findByCarId(car.getId());
-            List<String> photoUrls = new ArrayList<>();
-
-            carMedia.ifPresent(media -> {
-                if (media.getPhoto1() != null) photoUrls.add("/api/cars/media/" + car.getId() + "/photo1");
-                if (media.getPhoto2() != null) photoUrls.add("/api/cars/media/" + car.getId() + "/photo2");
-                if (media.getPhoto3() != null) photoUrls.add("/api/cars/media/" + car.getId() + "/photo3");
-                if (media.getPhoto4() != null) photoUrls.add("/api/cars/media/" + car.getId() + "/photo4");
-                if (media.getPhoto5() != null) photoUrls.add("/api/cars/media/" + car.getId() + "/photo5");
-            });
-
-            // Create DTO and add to results
-            searchResults.add(new CarSearchDTO(
-                    car.getId(),
-                    car.getTitle(),
-                    car.getMake(),
-                    car.getModel(),
-                    car.getType(),
-                    car.getRegularPrice(),
-                    photoUrls
-            ));
-        }
-
-        return searchResults;
-    }
-
-    private List<CarBasicDTO> getCarBasicDTOList(List<CarEntity> cars) {
-        return cars.stream().map(car -> {
-            // Map basic fields
-            CarBasicDTO dto = new CarBasicDTO();
-            dto.setId(car.getId());
-            dto.setTitle(car.getTitle());
-            dto.setMake(car.getMake());
-            dto.setModel(car.getModel());
-            dto.setType(car.getType());
-            dto.setYear(car.getYear());
-            dto.setCondition(car.getCondition());
-            dto.setStockNumber(car.getStockNumber());
-            dto.setVinNumber(car.getVinNumber());
-            dto.setRegularPrice(car.getRegularPrice());
-            dto.setSalePrice(car.getSalePrice());
-            dto.setRequestPrice(car.getRequestPrice());
-            dto.setDescription(car.getDescription());
-            dto.setPriceLabel(car.isPriceLabel());
-            dto.setCreateTime(car.getCreateTime());
-            dto.setUpdateTime(car.getUpdateTime());
-
-            // Map media from CarMediaEntity if present
-            CarMediaDTO mediaDTO = null;
-            CarMediaEntity media = car.getMedia();
-            if (media != null) {
-                mediaDTO = new CarMediaDTO();
-                // We return URL endpoints for photos rather than raw data.
-                // Adjust these endpoints if needed.
-                mediaDTO.setPhoto1(media.getPhoto1() != null ? "/api/cars/media/" + car.getId() + "/photo1" : null);
-                mediaDTO.setPhoto2(media.getPhoto2() != null ? "/api/cars/media/" + car.getId() + "/photo2" : null);
-                mediaDTO.setPhoto3(media.getPhoto3() != null ? "/api/cars/media/" + car.getId() + "/photo3" : null);
-                mediaDTO.setPhoto4(media.getPhoto4() != null ? "/api/cars/media/" + car.getId() + "/photo4" : null);
-                mediaDTO.setPhoto5(media.getPhoto5() != null ? "/api/cars/media/" + car.getId() + "/photo5" : null);
-                mediaDTO.setVideoUrl(media.getVideoUrl());
-                mediaDTO.setVinReport(media.getVinReport() != null ? "/api/cars/media/" + car.getId() + "/vinReport" : null);
-            }
-            dto.setMedia(mediaDTO);
-
-            return dto;
-        }).collect(Collectors.toList());
-    }
-
-    // 1. Get cars by type (limited to 6) ordered by createTime descending
-// Get 6 cars by type and return basic details with media
-    public List<CarBasicDTO> getCarsByTypeBasic(String type) {
-        List<CarEntity> cars = carRepository.findTop6ByTypeOrderByCreateTimeDesc(type);
-        return getCarBasicDTOList(cars);
-    }
-
-    // 2. Get trending cars based on wishlist counts (limited to 6)
-    public List<CarBasicDTO> getTrendingCars(int page, int size) {
-        List<CarEntity> trendingCars = carRepository.findTrendingCars(PageRequest.of(page, size));
-        return getCarBasicDTOList(trendingCars);
-    }
-
-    // 3. Get cars by brand (make) (limited to 6) ordered by createTime descending
-    public List<CarBasicDTO> getCarsByMake(String make) {
-        List<CarEntity> top6ByMakeOrderByCreateTimeDesc = carRepository.findTop6ByMakeOrderByCreateTimeDesc(make);
-        return getCarBasicDTOList(top6ByMakeOrderByCreateTimeDesc);
-    }
-
-    // 4. Get recently added cars (limited to 6) ordered by createTime descending
-    public List<CarBasicDTO> getRecentlyAddedCars(int page, int size) {
-        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createTime"))).stream().toList();
-        return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
-    }
-
-    // 5. Get all cars (limited to 6) – for a general “all cars” category
-    public List<CarBasicDTO> getAllCarsLimited(int page, int size) {
-        List<CarEntity> top6ByOrderByCreateTimeDesc = carRepository.findByOrderByCreateTimeDesc(PageRequest.of(page, size));
-        return getCarBasicDTOList(top6ByOrderByCreateTimeDesc);
-    }
-
-    // Get cars by type using page number and page size
-    public List<CarBasicDTO> getCarsByType(String type, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return carRepository.findByTypeDTO(type, pageable);
-    }
-
-    public List<CarBasicDTO> searchCars(String filterField, String filterValue, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        // Build Specification dynamically based on filterField and filterValue
-        var spec = new CarSpecification(filterField, filterValue);
-        Page<CarEntity> resultPage = carRepository.findAll(spec, pageable);
-        // Map CarEntity to CarBasicDTO (you can do this manually or use a mapper)
-        return resultPage.stream().map(car -> {
-            // For media, you may want to build a CarMediaDTO as shown in previous examples
-            // Here is a simplified mapping:
-            CarMediaEntity media = car.getMedia();
-            CarMediaDTO carMediaDTO = null;
-            if (null != media) {
-                carMediaDTO = new CarMediaDTO(
-                        media.getPhoto1() != null ? "/api/cars/media/" + car.getId() + "/photo1" : null,
-                        media.getPhoto2() != null ? "/api/cars/media/" + car.getId() + "/photo2" : null,
-                        media.getPhoto3() != null ? "/api/cars/media/" + car.getId() + "/photo3" : null,
-                        media.getPhoto4() != null ? "/api/cars/media/" + car.getId() + "/photo4" : null,
-                        media.getPhoto5() != null ? "/api/cars/media/" + car.getId() + "/photo5" : null,
-                        media.getVideoUrl(),
-                        media.getVinReport() != null ? "/api/cars/media/" + car.getId() + "/vinReport" : null
-                );
-            }
-            return new CarBasicDTO(
-                    car.getId(), car.getTitle(), car.getMake(), car.getModel(), car.getType(),
-                    car.getYear(), car.getCondition(), car.getStockNumber(), car.getVinNumber(),
-                    car.getRegularPrice(), car.getSalePrice(), car.getRequestPrice(),
-                    car.getDescription(), car.isPriceLabel(), car.getCreateTime(), car.getUpdateTime(),
-                    carMediaDTO // You can map media here if needed
-            );
-        }).collect(Collectors.toList());
+    /**
+     * Get all cars by vendor
+     */
+    @Transactional
+    public List<CarStatusDTO> getCarsByVendor(Long vendorId) {
+        return CarMapper.toStatusDTOList(carRepository.findByVendorId(vendorId));
     }
 
     /**
-     * Fetch cars based on status (Pending, Approved, Rejected, etc.)
+     * Get similar products to a specific car
      */
-    public List<CarResponseDTO> getCarsByStatus(String status) {
-        return carRepository.findByStatus(status)
-                .stream()
-                .map(car -> new CarResponseDTO(
-                        car.getId(), car.getTitle(), car.getMake(), car.getModel(),
-                        car.getType(), car.getStatus(), car.getRegularPrice(),
-                        car.getCreateTime(), car.getUpdateTime()
-                ))
-                .collect(Collectors.toList());
+    @Transactional
+    public List<CarSearchResultDTO> getSimilarProducts(Long carId) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+
+        List<CarEntity> similarCars = carRepository.findByTypeAndModelAndIdNot(
+                car.getType(), car.getModel(), carId);
+
+        return CarMapper.toSearchResultDTOList(similarCars);
+    }
+
+    /**
+     * Get car details
+     */
+    @Transactional
+    public CarDetailsDTO getCarDetails(Long carId) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found"));
+
+        return CarMapper.toDetailsDTO(car);
+    }
+
+    /**
+     * Get all cars' basic details
+     */
+    @Transactional
+    public List<CarDetailsDTO> getAllCarsBasicDetails() {
+        return CarMapper.toDetailsDTOList(carRepository.findAll());
+    }
+
+    /**
+     * Search cars by keyword
+     */
+    @Transactional
+    public List<CarSearchResultDTO> searchCars(String keyword) {
+        List<CarEntity> cars = carRepository.searchByKeyword(keyword);
+        return CarMapper.toSearchResultDTOList(cars);
+    }
+
+    /**
+     * Get trending cars
+     */
+    @Transactional
+    public List<CarSearchResultDTO> getTrendingCars(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createTime").descending());
+        Page<CarEntity> carPage = carRepository.findAll(pageable);
+        return CarMapper.toSearchResultDTOList(carPage.getContent());
+    }
+
+    /**
+     * Get recently added cars
+     */
+    @Transactional
+    public List<CarSearchResultDTO> getRecentlyAddedCars(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createTime").descending());
+        Page<CarEntity> carPage = carRepository.findAll(pageable);
+        return CarMapper.toSearchResultDTOList(carPage.getContent());
+    }
+
+    /**
+     * Get all cars with pagination
+     */
+    @Transactional
+    public List<CarSearchResultDTO> getAllCarsLimited(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createTime").descending());
+        Page<CarEntity> carPage = carRepository.findAll(pageable);
+        return CarMapper.toSearchResultDTOList(carPage.getContent());
+    }
+
+    /**
+     * Search cars by filter criteria
+     */
+    @Transactional
+    public List<CarSearchResultDTO> searchCars(String filterField, String filterValue, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        var spec = new CarSpecification(filterField, filterValue);
+        Page<CarEntity> resultPage = carRepository.findAll(spec, pageable);
+        return CarMapper.toSearchResultDTOList(resultPage.getContent());
+    }
+
+    /**
+     * Get cars by status
+     */
+    @Transactional
+    public List<CarStatusDTO> getCarsByStatus(String status) {
+        CarStatus carStatus = CarStatus.safeValueOf(status);
+        List<CarEntity> cars = carRepository.findByStatus(carStatus.name());
+        return CarMapper.toStatusDTOList(cars);
     }
 
     /**
      * Approve a car listing
      */
     @Transactional
-    public void approveCar(Long carId) {
+    public CarStatusDTO approveCar(Long carId) {
         CarEntity car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
 
-        car.setStatus("APPROVED");
-        carRepository.save(car);
+        car.setStatus(CarStatus.APPROVED.name());
+        CarEntity savedCar = carRepository.save(car);
+        return CarMapper.toStatusDTO(savedCar);
     }
 
     /**
      * Reject a car listing
      */
     @Transactional
-    public void rejectCar(Long carId) {
+    public CarStatusDTO rejectCar(Long carId) {
         CarEntity car = carRepository.findById(carId)
                 .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
 
-        car.setStatus("REJECTED");
-        carRepository.save(car);
+        car.setStatus(CarStatus.REJECTED.name());
+        CarEntity savedCar = carRepository.save(car);
+        return CarMapper.toStatusDTO(savedCar);
+    }
+
+    /**
+     * Mark a car as sold
+     */
+    @Transactional
+    public CarStatusDTO markCarAsSold(Long carId) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
+
+        car.setStatus(CarStatus.SOLD.name());
+        CarEntity savedCar = carRepository.save(car);
+        return CarMapper.toStatusDTO(savedCar);
     }
 
     /**
@@ -343,6 +315,42 @@ public class CarService {
         }
         carRepository.deleteById(carId);
     }
+
+    /**
+     * Get cars by make with pagination
+     */
+    @Transactional
+    public List<CarSearchResultDTO> getCarsByMake(String make, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createTime").descending());
+        Page<CarEntity> carPage = carRepository.findByMake(make, pageable);
+        return CarMapper.toSearchResultDTOList(carPage.getContent());
+    }
+
+    /**
+     * Get cars by type with pagination
+     */
+    @Transactional
+    public List<CarSearchResultDTO> getCarsByType(String type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createTime").descending());
+        Page<CarEntity> carPage = carRepository.findByType(type, pageable);
+        return CarMapper.toSearchResultDTOList(carPage.getContent());
+    }
+
+    /**
+     * Update car status
+     */
+    @Transactional
+    public CarStatusDTO updateCarStatus(Long carId, String status) {
+        CarEntity car = carRepository.findById(carId)
+                .orElseThrow(() -> new RuntimeException("Car not found with ID: " + carId));
+
+        try {
+            CarStatus carStatus = CarStatus.fromString(status);
+            car.setStatus(carStatus.name());
+            CarEntity savedCar = carRepository.save(car);
+            return CarMapper.toStatusDTO(savedCar);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid car status: " + status);
+        }
+    }
 }
-
-

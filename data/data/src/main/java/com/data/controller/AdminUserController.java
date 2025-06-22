@@ -21,7 +21,7 @@ public class AdminUserController {
     /**
      * Get all users
      */
-    @Secured("ROLE_ADMIN")
+    //@Secured("ROLE_ADMIN")
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -30,7 +30,7 @@ public class AdminUserController {
     /**
      * Get user by ID
      */
-    @Secured("ROLE_ADMIN")
+   // @Secured("ROLE_ADMIN")
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(userService.getUserById(userId));

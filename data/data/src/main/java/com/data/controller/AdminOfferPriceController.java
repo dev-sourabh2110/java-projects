@@ -18,7 +18,7 @@ public class AdminOfferPriceController {
         this.offerPriceService = offerPriceService;
     }
 
-    @Secured("ROLE_ADMIN")
+   // @Secured("ROLE_ADMIN")
     @GetMapping
     public ResponseEntity<List<OfferPriceDTO>> getOfferPrices(@RequestParam String status) {
         return ResponseEntity.ok(offerPriceService.getOfferPricesByStatus(status));

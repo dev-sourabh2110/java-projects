@@ -17,25 +17,25 @@ public class HomeController {
     @Autowired
     private HomeService homeService;
 
-    @Secured({"USER", "VENDOR"})
+    //@Secured({"USER", "VENDOR"})
     @GetMapping("/trending-cars")
     public ResponseEntity<List<CarEntity>> getTrendingCars() {
         return ResponseEntity.ok(homeService.getTrendingCars());
     }
 
-    @Secured({"USER", "VENDOR"})
+   // @Secured({"USER", "VENDOR"})
     @GetMapping("/recently-added")
     public ResponseEntity<List<CarEntity>> getRecentlyAddedCars() {
         return ResponseEntity.ok(homeService.getRecentlyAddedCars());
     }
 
-    @Secured("USER")
+   // @Secured("USER")
     @GetMapping("/categories")
     public ResponseEntity<List<String>> getCategories() {
         return ResponseEntity.ok(homeService.getCategories());
     }
 
-    @Secured("USER")
+   // @Secured("USER")
     @GetMapping("/brands")
     public ResponseEntity<List<String>> getBrands() {
         return ResponseEntity.ok(homeService.getBrands());

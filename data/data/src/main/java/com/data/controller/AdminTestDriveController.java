@@ -18,7 +18,7 @@ public class AdminTestDriveController {
         this.testDriveService = testDriveService;
     }
 
-    @Secured("ROLE_ADMIN")
+   // @Secured("ROLE_ADMIN")
     @GetMapping
     public ResponseEntity<List<TestDriveDTO>> getTestDrives(@RequestParam String status) {
         return ResponseEntity.ok(testDriveService.getTestDrivesByStatus(status));

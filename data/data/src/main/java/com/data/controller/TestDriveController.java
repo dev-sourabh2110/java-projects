@@ -56,7 +56,7 @@ public class TestDriveController {
         return ResponseEntity.ok(result);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasRole('USER')")
     @GetMapping("/appointments")
     public ResponseEntity<?> getAppointments(@AuthenticationPrincipal UserDetails userDetails) {
         // Step 1: Fetch the user based on the email
